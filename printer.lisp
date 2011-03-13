@@ -160,14 +160,65 @@
     (mapcar (lambda (a) (print-element a stream)) rest)
     (format stream "</code></pre>")))
 
+;;; track whether we are in a code block, so we can avoid smart-quote
+;;; junk if it was enabled in the parser
+;;;
+;;; possibly should just check the *smart-quotes* var from 3bmd-grammar
+;;; and bind that to nil inside code blocks?
+;;; (or make parser smart enough to not match inside code blocks)
+(defparameter *in-code* nil)
+
 (defmethod print-tagged-element ((tag (eql :code)) stream rest)
   (format stream "<code>")
-  (mapcar (lambda (a) (print-element a stream)) rest)
+  (let ((*in-code* t))
+    (mapcar (lambda (a) (print-element a stream)) rest))
   (format stream "</code>"))
+
+(defmethod print-tagged-element ((tag (eql :single-quoted)) stream rest)
+  (if *in-code*
+      (format stream "'")
+      (format stream "&lsquo;"))
+  (mapcar (lambda (a) (print-element a stream)) rest)
+  (if *in-code*
+      (format stream "'")
+      (format stream "&rsquo;")))
+
+(defmethod print-tagged-element ((tag (eql :double-quoted)) stream rest)
+  (if *in-code*
+      (format stream "\"")
+      (format stream "&ldquo;"))
+  (mapcar (lambda (a) (print-element a stream)) rest)
+  (if *in-code*
+      (format stream "\"")
+      (format stream "&rdquo;")))
+
+(defmacro define-smart-quote-entity (name replacement)
+  `(defmethod print-tagged-element ((tag (eql ,name)) stream rest)
+     (if *in-code*
+         (format stream "~{~a~}" rest)
+         (format stream ,replacement))))
+
+(define-smart-quote-entity :em-dash "&mdash;")
+(define-smart-quote-entity :en-dash "&ndash;")
+(define-smart-quote-entity :left-right-single-arrow "&harr;")
+(define-smart-quote-entity :left-single-arrow "&larr;")
+(define-smart-quote-entity :right-single-arrow "&rarr;")
+(define-smart-quote-entity :left-right-double-arrow "&hArr;")
+(define-smart-quote-entity :left-double-arrow "&lArr;")
+(define-smart-quote-entity :right-double-arrow "&rArr;")
+
+(defmethod print-tagged-element ((tag (eql :ellipsis)) stream rest)
+  (if *in-code*
+      (format stream "~{~a~}" rest)
+      (format stream "&hellip;")))
 
 (defmethod print-tagged-element ((tag (eql :reference)) stream rest)
   )
 
+(defmethod print-element ((elem (eql :apostrophe)) stream)
+  (if *in-code*
+      (format stream "'")
+      (format stream "&apos;")))
 
 (defmethod print-element ((elem string) stream)
   #++(format stream "~a" elem)
@@ -177,6 +228,8 @@
   (if (keywordp (car elem))
       (print-tagged-element (car elem) stream (cdr elem))
       (error "unknown cons? ~s" elem)))
+
+
 
 (defun extract-refs (doc)
   (alexandria:alist-hash-table
