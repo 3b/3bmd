@@ -20,9 +20,9 @@ todo:
 * If `3bmd:*smart-quotes*` is non-`NIL` while parsing, some extra patterns will be recognized and converted as follows (outside code blocks):
     * `'`single quoted strings`'` -> `&lsquo;` ... `&rsquo;` like &lsquo;single quoted string&rsquo;
       (with slightly ugly heuristics to avoid contractions)
-    * other single quotes `'` -> `'&apos;` &apos;
+    * other single quotes `'` -> `&apos;` &apos;
     * `"`double quoted strings`"` -> `&ldquo;` ... `&rdquo;`, like &ldquo;double quoted string&rdquo;
-    * ellipsis `...` or `. . .` -> `&hellip`;, &hellip;
+    * ellipsis `...` or `. . .` -> `&hellip;`, &hellip;
     * en dash `--` -> `&ndash;`, &ndash;
     * em dash `---` -> `&mdash;`, &mdash;
     * left right arrow `<->` -> `&harr;`, &harr;
