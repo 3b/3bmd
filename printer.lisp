@@ -275,3 +275,21 @@
   (let* ((input (expand-tabs string :add-newlines t)))
     (print-doc-to-stream (3bmd-grammar::parse-doc input) stream)))
 
+
+(defparameter *wiki-processor* nil
+  "set to something PROCESS-WIKI-LINK etc will recognize to enable wiki link support in printer (see also *wiki-links* to enable wiki link parsing)")
+
+(defgeneric process-wiki-link (wiki normalized-target formatted-target args stream)
+  ;; just ignore the link by default
+  (:method ((w null) nt formatted a stream)
+    (declare (ignore w nt a))
+    (format stream "~a" formatted)))
+
+(defmethod print-tagged-element ((tag (eql :wiki-link)) stream rest)
+  (destructuring-bind (&key label args) rest
+    (let ((formatted (with-output-to-string (s)
+                       (loop for i in label do (print-element i s))))
+          ;; todo: figure out how to normalize formatted links, or
+          ;; restrict the grammar to disalow them
+          (normalized (print-label-to-string label)))
+      (process-wiki-link *wiki-processor* normalized formatted args stream))))

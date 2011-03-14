@@ -13,8 +13,10 @@
            #:parse-string-and-print-to-stream
            #:parse-and-print-to-stream
            #:print-doc-to-stream
+           #:process-wiki-link
            #:*smart-quotes*
            #:*wiki-links*
+           #:*wiki-processor*
            ))
 
 

@@ -32,4 +32,5 @@ todo:
     * left double arrow `<=` -> `&lArr;`, &lArr;
     * right double arrow `=>` -> `&rArr;`, &rArr;
 
-
+* If `3bmd:*wiki-links*` is non-`NIL` while parsing, wiki links of the form `[[foo]]` or `[[foo|...]]` will be parsed, where `...` is one or more optional args separated by `|` characters.  
+    By default, wiki links will just print the `foo` part as normal text. To integrate into an actual wiki, users should bind `3bmd:*wiki-processor*` during printing, and define a method on `3bmd:process-wiki-link` that specializes on the value of `3bmd:*wiki-processor*` to create an HTML link from the `foo` and arguments. (API subject to change.)
