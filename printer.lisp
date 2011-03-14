@@ -83,7 +83,7 @@
   (format stream "<a href=\"~a\">~a</a>" (car rest) (car rest)))
 
 (defmethod print-tagged-element ((tag (eql :explicit-link)) stream rest)
-  (format stream "<a href=\"~a\" ~@[title=\"~a\"~]>"
+  (format stream "<a href=\"~a\"~@[ title=\"~a\"~]>"
           (getf rest :source)
           (escape-string
            (or (getf rest :title) (if *always-title* "" nil))))
@@ -96,7 +96,7 @@
          (ref (lookup-reference def)))
     (cond
       (ref
-       (format stream "<a href=\"~a\" ~@[title=\"~a\"~]>" (first ref)
+       (format stream "<a href=\"~a\"~@[ title=\"~a\"~]>" (first ref)
                (escape-string (or (second ref) (if *always-title* "" nil))))
        (mapcar (lambda (a) (print-element a stream)) label)
        (format stream "</a>"))
@@ -107,7 +107,7 @@
 
 (defmethod print-tagged-element ((tag (eql :image)) stream rest)
   (setf rest (cdr (first rest)))
-  (format stream "<img src=\"~a\" ~@[alt=\"~a\"~] ~@[title=\"~a\"~]/>"
+  (format stream "<img src=\"~a\"~@[ alt=\"~a\"~]~@[ title=\"~a\"~]/>"
           (getf rest :source)
           (with-output-to-string (s)
             (mapcar (lambda (a) (print-element a s)) (getf rest :label)))
