@@ -10,8 +10,14 @@
          ;; return "" on match so it doesn't interfere with concat
          (:constant "")))))
 
+;;; expand '," to smart quotes, ... to ellipsis, etc
 (define-extension *smart-quotes* smart-quotes)
-(define-extension *notes* notes)
+;;; [[foo|bar]] style wiki links
+;;; parsed as a link label followed by 0 or more args separated by |
+;;; actual interpretation is up to the printing layer
+(define-extension *wiki-links* wiki-links)
+;; todo: footnotes...
+(define-extension *wiki-links* notes)
 
 (defrule eof (! character)
   (:constant ""))
@@ -51,8 +57,12 @@
 (defrule special-char (or #\* #\_ #\` #\& #\[ #\] #\< #\! #\# #\\
                           extended-special-char)
   (:concat t))
+;; fixme: if possible, would be nice to refactor this to avoid duplicates
+;;  when more than one extension is enabled
 (defrule extended-special-char (or (and smart-quotes
                                         (or #\. #\- #\' #\" #\=))
+                                   (and wiki-links
+                                        (or #\| #\= #\'))
                                    (and notes
                                         #\^))
   (:concat t))
@@ -440,6 +450,8 @@
                     space
                     strong
                     emph
+                    quoted-wiki-link
+                    wiki-link
                     image
                     link
                     #++ note-reference
@@ -512,6 +524,36 @@
                 (append (mapcar 'second i) (list e))))
 
 
+;;; allowing markup for now, to be normalized like ref links during printing...
+(defrule wiki-link-label (* (and (! #\]) (! #\|) inline))
+  (:lambda (a)
+    (mapcar 'third a)))
+
+(defrule wiki-link-arg (* (and (! "|") (! "]]") character))
+  (:concat t))
+(defrule wiki-link (and wiki-links
+                        "[["
+                        wiki-link-label
+                        (* (and "|" wiki-link-arg))
+                        "]]")
+  (:destructure (ext [ label args ])
+                (declare (ignore ext [ ]))
+                (list :wiki-link :label label :args (mapcar 'second args))))
+
+(defrule quoted-wiki-link (and wiki-links
+                               #\'
+                               ;; would be nicer to just use wiki-link
+                               ;; rule rather than duplicating it
+                               ;; here, but then we'd have to
+                               ;; serialize it back to text to put the
+                               ;; "[[" back, and worry about
+                               ;; whitespace, etc
+                               "[["
+                               (* (and (! #\]) character))
+                               "]]")
+  (:destructure (ext q &rest link)
+                (declare (ignore ext q))
+                (concat link)))
 
 (defrule image (and #\! (or explicit-link reference-link))
   (:destructure (! link)

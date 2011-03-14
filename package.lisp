@@ -4,6 +4,7 @@
            ;; possibly should export some symbols for direct parsing too?
            ;; #:doc #:block
            #:*smart-quotes*
+           #:*wiki-links*
            ))
 
 (defpackage #:3bmd
@@ -13,6 +14,7 @@
            #:parse-and-print-to-stream
            #:print-doc-to-stream
            #:*smart-quotes*
+           #:*wiki-links*
            ))
 
 
