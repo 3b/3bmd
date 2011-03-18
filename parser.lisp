@@ -447,8 +447,9 @@
                                  symbol)
     "internal hook for extending 'inline' grammar, don't modify directly"))
 
+(defrule inline-extensions (or ))
 
-(defrule inline #. (cons 'or %inline-rules%))
+(defrule inline #. (list* 'or 'inline-extensions %inline-rules%))
 
 (defrule maybe-alphanumeric (& alphanumeric)
   (:constant ""))
