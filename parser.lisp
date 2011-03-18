@@ -415,8 +415,10 @@
     (cons :plain a)))
 
 
+(defrule inline-extensions (or ))
 
-(defrule inline (or string
+(defrule inline (or inline-extensions
+                    string
                     endline
                     ul-or-star-line
                     space
