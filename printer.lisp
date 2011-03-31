@@ -28,7 +28,8 @@
 (defun lookup-reference (ref)
   #++(format t "lookup ref ~s -> ~s~%" (print-label-to-string ref)
           (gethash (print-label-to-string ref) *references*))
-  (gethash (print-label-to-string ref) *references*))
+  (if *references*
+      (gethash (print-label-to-string ref) *references*)))
 
 
 (defun print-escaped (string stream)
