@@ -1,40 +1,31 @@
 (in-package #:3bmd-grammar)
 
-(defmacro define-extension (var rule)
-  (let ((predicate (gensym "extension-predicate")))
-    `(progn
-       (defparameter ,var nil)
-       (defun ,predicate ()
-         ,var)
-       (defrule ,rule (,predicate)
-         ;; return "" on match so it doesn't interfere with concat
-         (:constant "")))))
-
 ;;; expand '," to smart quotes, ... to ellipsis, etc
-(define-extension *smart-quotes* smart-quotes)
+(defparameter *smart-quotes* nil)
 ;;; [[foo|bar]] style wiki links
 ;;; parsed as a link label followed by 0 or more args separated by |
 ;;; actual interpretation is up to the printing layer
-(define-extension *wiki-links* wiki-links)
+(defparameter *wiki-links* nil)
 ;; todo: footnotes...
-(define-extension *wiki-links* notes)
+
+(defparameter *footnotes* nil)
 
 (defrule eof (! character)
   (:constant ""))
 (defrule space-char (or #\space #\tab)
-  (:concat t))
+  (:text t))
 (defrule newline (or #\linefeed (and #\return #\linefeed))
-  (:concat t))
+  (:text t))
 (defrule sp (* space-char)
-  (:concat t))
+  (:text t))
 (defrule spnl (and sp (? (and newline sp)))
-  (:concat t))
+  (:text t))
 (defrule blank-line (and sp newline)
   (:constant "
 "))
 
 (defrule nonindent-space (or "   " "  " " " "")
-  (:concat t))
+  (:text t))
 (defrule indent (or #\tab "    ")
   (:constant "    "))
 (defrule normal-endline (and sp newline
@@ -45,29 +36,32 @@
                                      (or (and "===" (* #\=))
                                          (and "___" (* #\_)))
                                      newline)))
-  (:concat t))
+  (:text t))
 (defrule terminal-endline (and sp newline eof)
-  (:concat t))
+  (:text t))
 
 (defrule line-break (and "  " normal-endline)
   (:constant '(:line-break)))
 (defrule endline (or line-break terminal-endline normal-endline))
 (defrule normal-char (and (! (or special-char space-char newline)) character)
-  (:concat t))
+  (:text t))
 (defrule special-char (or #\* #\_ #\` #\& #\[ #\] #\< #\! #\# #\\
                           extended-special-char)
-  (:concat t))
+  (:text t))
 ;; fixme: if possible, would be nice to refactor this to avoid duplicates
 ;;  when more than one extension is enabled
-(defrule extended-special-char (or (and smart-quotes
-                                        (or #\. #\- #\' #\" #\=))
-                                   (and wiki-links
-                                        (or #\| #\= #\'))
-                                   (and notes
-                                        #\^))
-  (:concat t))
+(defrule smart-quote-extended-chars (or #\. #\- #\' #\" #\=)
+  (:when *smart-quotes*))
+(defrule wiki-link-extended-chars (or #\| #\= #\')
+  (:when *wiki-links*))
+(defrule notes-extended-chars #\^
+  (:when *footnotes*))
+(defrule extended-special-char (or smart-quote-extended-chars
+                                   wiki-link-extended-chars
+                                   notes-extended-chars)
+  (:text t))
 (defrule non-space-char (and (! space-char) (! newline) character)
-  (:concat t))
+  (:text t))
 (defrule alphanumeric (alphanumericp character))
 (defrule dec-digit (or #\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9))
 (defrule hex-digit (or dec-digit
@@ -119,12 +113,13 @@
 
 
 (defrule line raw-line
-  (:concat t))
+  (:text t))
 (defrule raw-line (or (and (* (and (! #\newline) (! #\return) character))
                            newline)
                       (and (+ character) eof) ))
 (defrule optionally-indented-line (and (? indent) line)
   (:destructure (i l)
+                (declare (ignore i))
                 l))
 
 (defrule block-quote (+ (and (and #\> (? #\space) line)
@@ -133,7 +128,7 @@
   (:destructure (&rest chunks)
                 (cons :block-quote
                       (parse-doc
-                       (concat
+                       (text
                         (loop for ((> sp l1) (lines) (blank)) in chunks
                            collect l1
                            collect lines
@@ -154,7 +149,7 @@
                              (+ non-blank-indented-line)))
 (defrule verbatim (+ verbatim-chunk)
   (:lambda (a)
-    (list :verbatim (concat a))))
+    (list :verbatim (text a))))
 
 
 (defrule ref-title (or ref-title-single ref-title-double ref-title-parens empty-title))
@@ -167,7 +162,7 @@
                                   ,close-delim)
                 (:destructure (q title q2)
                               (declare (ignore q q2))
-                              (concat title)))))
+                              (text title)))))
   (def-ref-title ref-title-single #\')
   (def-ref-title ref-title-double #\")
   (def-ref-title ref-title-parens #\( #\)))
@@ -175,7 +170,7 @@
   (:constant nil))
 
 (defrule ref-source (+ non-space-char)
-  (:concat t))
+  (:text t))
 
 ;; fixme: is 'label' field allowed to have markup?
 ;; peg-markdown seems to allow it, but markdown.pl doesn't
@@ -266,7 +261,7 @@
                 (declare (ignore b e))
                 (list* :list-item
                        (mapcan (lambda (a)
-                                 (parse-doc (concat a)))
+                                 (parse-doc (text a)))
                                (split-sequence:split-sequence
                                 :split (cons block (mapcan 'second cont))
                                 :remove-empty-subseqs t)))))
@@ -282,7 +277,7 @@
                 (declare (ignore b))
                 (list* :list-item
                        (mapcan (lambda (a)
-                                 (parse-doc (concat a)))
+                                 (parse-doc (text a)))
                                (split-sequence:split-sequence
                                 :split (append (cons block (mapcan 'identity cont))
                                                (list "
@@ -295,13 +290,13 @@
                          (* list-block-line))
   (:destructure (b l block)
                 (declare (ignore b))
-                (concat l block)))
+                (text l block)))
 
 (defrule list-continuation-block (and (* blank-line)
                                       (+ (and indent list-block)))
   (:destructure (b c)
                 (if b
-                    (cons (concat b) (mapcar 'second c))
+                    (cons (text b) (mapcar 'second c))
                     (cons :split (mapcar 'second c)))))
 
 (defrule list-block-line (and (! blank-line)
@@ -320,7 +315,7 @@
                          (+ blank-line))
   (:destructure (html b)
                 (declare (ignore b))
-                (list :html (concat html))))
+                (list :html (text html))))
 
 (defrule html-block-self-closing (and #\< spnl
                                       html-block-type spnl
@@ -357,7 +352,7 @@
                                     (* (or ,name
                                            (and (! ,end) character)))
                                     ,end)
-                  (:concat t)))))
+                  (:text t)))))
   (def-html-block html-block-address "address")
   (def-html-block html-block-blockquote "blockquote")
   (def-html-block html-block-center "center")
@@ -467,17 +462,17 @@
 (defrule maybe-alphanumeric (& alphanumeric)
   (:constant ""))
 (defrule string (and normal-char (* (or normal-char (and (+ #\_) maybe-alphanumeric))))
-  (:concat t))
+  (:text t))
 
 (defrule maybe-space-char (& space-char)
   (:constant ""))
 (defrule ul-or-star-line (or ul-line star-line)
-  (:concat t))
+  (:text t))
 (defrule star-line (or (and "****" (* #\*)) (and space-char (+ #\*) maybe-space-char)))
 (defrule ul-line (or (and "____" (* #\_)) (and space-char (+ #\_) maybe-space-char)))
 
 (defrule space (+ space-char)
-  (:concat t))
+  (:text t))
 
 (defrule strong (or strong-star strong-ul)
   (:destructure (&rest a)
@@ -530,18 +525,17 @@
     (mapcar 'third a)))
 
 (defrule wiki-link-arg (* (and (! "|") (! "]]") character))
-  (:concat t))
-(defrule wiki-link (and wiki-links
-                        "[["
+  (:text t))
+(defrule wiki-link (and "[["
                         wiki-link-label
                         (* (and "|" wiki-link-arg))
                         "]]")
-  (:destructure (ext [ label args ])
-                (declare (ignore ext [ ]))
+  (:when *wiki-links*)
+  (:destructure ([ label args ])
+                (declare (ignore [ ]))
                 (list :wiki-link :label label :args (mapcar 'second args))))
 
-(defrule quoted-wiki-link (and wiki-links
-                               #\'
+(defrule quoted-wiki-link (and #\'
                                ;; would be nicer to just use wiki-link
                                ;; rule rather than duplicating it
                                ;; here, but then we'd have to
@@ -551,9 +545,10 @@
                                "[["
                                (* (and (! #\]) character))
                                "]]")
-  (:destructure (ext q &rest link)
-                (declare (ignore ext q))
-                (concat link)))
+  (:when *wiki-links*)
+  (:destructure (q &rest link)
+                (declare (ignore q))
+                (text link)))
 
 (defrule image (and #\! (or explicit-link reference-link))
   (:destructure (! link)
@@ -566,18 +561,18 @@
   (:destructure (link i1 i2 definition)
                 (declare (ignore i1 i2))
                 (list :reference-link :label link
-                      :definition (concat definition))))
+                      :definition (text definition))))
 (defrule reference-link-single (and label (? (and spnl "[]")))
   (:destructure (label tail)
-                (let ((tail (concat tail)))
+                (let ((tail (text tail)))
                   (list :reference-link :label label
                         :tail (if (string= tail "") nil tail)))))
 (defrule explicit-link (and label spnl "(" sp source spnl title sp ")")
   (:destructure (label n n2 n3 source n4 title s n5)
                 (declare (ignore n n2 n3 n4 n5 s))
                 (list :explicit-link :label label
-                      :source (concat source)
-                      :title (if (equal title "") nil (concat title)))))
+                      :source (text source)
+                      :title (if (equal title "") nil (text title)))))
 
 (defrule auto-link (or auto-link-url auto-link-email))
 (defrule auto-link-url (and #\< (+ |A-Za-z|) "://" (+ (and (! newline)
@@ -586,14 +581,14 @@
                             #\>)
   (:destructure (< url1 url2 url3 >)
                 (declare (ignore < >))
-                (list :link (concat url1 url2 url3))))
+                (list :link (text url1 url2 url3))))
 (defrule auto-link-email (and #\< (+ ascii-character) "@" (+ (and (! newline)
                                                            (! #\>)
                                                            character))
                             #\>)
   (:destructure (< url1 url2 url3 >)
                 (declare (ignore < >))
-                (list :link (concat "mailto:" url1 url2 url3))))
+                (list :link (text "mailto:" url1 url2 url3))))
 
 (defrule label (and #\[ (* (and (! #\]) inline)) #\])
   (:destructure ([ label ])
@@ -609,20 +604,20 @@
                                     (and "(" source-contents ")")))
                              "")
   (:lambda (a)
-    (concat a)))
+    (text a)))
 (defrule title (or title-single title-double ""))
 (defrule title-single (and #\' (* (and (! (and #\' sp (or #\) newline)))
                                        character))
                            #\')
   (:destructure (q1 a q2)
                 (declare (ignore q1 q2))
-                (concat a)))
+                (text a)))
 (defrule title-double (and #\" (* (and (! (and #\" sp (or #\) newline)))
                                        character))
                            #\")
   (:destructure (q1 a q2)
                 (declare (ignore q1 q2))
-                (concat a)))
+                (text a)))
 
 (macrolet
     ((ticks-code (ticks code str)
@@ -637,7 +632,7 @@
                               sp ,ticks)
             (:destructure (q n a n2 q2)
                           (declare (ignore q n n2 q2))
-                          (concat a))))))
+                          (text a))))))
   (ticks-code ticks1 code1 "`")
   (ticks-code ticks2 code2 "``")
   (ticks-code ticks3 code3 "```")
@@ -652,11 +647,11 @@
   (:lambda (a)
     (list :raw-html a)))
 (defrule html-comment (and "<!--" (* (and (! "-->") character)) "-->")
-  (:concat t))
+  (:text t))
 (defrule html-tag (and #\< spnl (? #\/) (+ alphanumeric-ascii)
                        spnl (* html-attribute)
                        (? #\/) #\>)
-  (:concat t))
+  (:text t))
 (defrule html-attribute (and (+ (or alphanumeric-ascii #\-)) spnl
                              (? (and "=" spnl (or quoted
                                                   (+ (and (! (or #\> #\' #\"))
@@ -667,30 +662,30 @@
 
 (defrule entity (or hex-entity dec-entity char-entity)
   (:lambda (a)
-    (list :entity (concat a))))
+    (list :entity (text a))))
 (defrule hex-entity (and (~ "&#x") (+ hex-digit) ";")
-  (:concat t))
+  (:text t))
 (defrule dec-entity (and "&#" (+ dec-digit) ";")
-  (:concat t))
+  (:text t))
 (defrule char-entity (and "&" (+ ascii-character) ";")
-  (:concat t))
+  (:text t))
 
 
+(defrule smart-quote-escaped-characters #.`(or ,@(coerce "=\"'" 'list))
+         (:when *smart-quotes*))
 (defrule escaped-character (and #\\ (! newline)
                                 #.`(or ,@(coerce  "-\\`|*_{}[]()#+.!<>" 'list)
-                                       (and smart-quotes
-                                            #.`(or ,@(coerce "=\"'" 'list)))))
+                                       smart-quote-escaped-characters))
   (:destructure (\\ n c)
                 (declare (ignore \\ n))
                 (if (consp c) (second c) c)))
 
-(defrule smart (and smart-quotes
-                    (or ellipsis dash single-quoted double-quoted
-                        apostrophe
-                        arrows))
-  (:destructure (ext value)
-                (declare (ignore ext))
-                value))
+(defrule smart (or ellipsis dash single-quoted double-quoted
+        apostrophe
+        arrows)
+  (:when *smart-quotes*)
+  (:lambda (value)
+    value))
 
 ;; we store the original text for ellipsis,dashes,etc so we can use it inside
 ;; code blocks
