@@ -12,8 +12,8 @@
   (:concat t))
 (defrule blank-line (and sp newline)
   (:constant "
-")
-  )
+"))
+
 (defrule nonindent-space (or "   " "  " " " "")
   (:concat t))
 (defrule indent (or #\tab "    ")
