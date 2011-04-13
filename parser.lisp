@@ -36,8 +36,14 @@
 (defrule normal-char (and (! (or special-char space-char newline)) character)
   (:concat t))
 (defrule special-char (or #\* #\_ #\` #\& #\[ #\] #\< #\! #\# #\\
-                          #++ extended-special-char)
+                          extended-special-char)
   (:concat t))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defparameter %extended-special-char-rules% nil))
+(defrule extended-special-char #.(cons 'or %extended-special-char-rules%)
+  (:concat t))
+
 (defrule non-space-char (and (! space-char) (! newline) character)
   (:concat t))
 (defrule alphanumeric (alphanumericp character))
@@ -57,21 +63,23 @@
 
 
 (defrule doc (* block))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defparameter %block-rules% '(block-quote
+                                verbatim
+                                #++ note
+                                reference
+                                horizontal-rule
+                                heading
+                                ordered-list
+                                bullet-list
+                                html-block
+                                #++ style-block
+                                paragraph
+                                plain)
+    "internal hook for extending 'block' grammar, don't modify directly"))
 
 (defrule block (and (* blank-line)
-                    (or block-quote
-                        verbatim
-                        #++ note
-                        reference
-                        horizontal-rule
-                        heading
-                        ordered-list
-                        bullet-list
-                        html-block
-                        #++ style-block
-                        paragraph
-                        plain
-                        ))
+                    #.(cons 'or %block-rules%))
   (:destructure (blank block)
                 (declare (ignore blank))
                 block))
@@ -414,25 +422,27 @@
   (:lambda (a)
     (cons :plain a)))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defparameter %inline-rules% '(string
+                                 endline
+                                 ul-or-star-line
+                                 space
+                                 strong
+                                 emph
+                                 image
+                                 link
+                                 #++ note-reference
+                                 #++ inline-note
+                                 code
+                                 raw-html
+                                 entity
+                                 escaped-character
+                                 #++ smart
+                                 symbol)
+    "internal hook for extending 'inline' grammar, don't modify directly"))
 
 
-(defrule inline (or string
-                    endline
-                    ul-or-star-line
-                    space
-                    strong
-                    emph
-                    image
-                    link
-                    #++ note-reference
-                    #++ inline-note
-                    code
-                    raw-html
-                    entity
-                    escaped-character
-                    #++ smart
-                    symbol
-                    ))
+(defrule inline #. (cons 'or %inline-rules%))
 
 (defrule maybe-alphanumeric (& alphanumeric)
   (:constant ""))
@@ -617,7 +627,12 @@
   (:concat t))
 
 
-(defrule escaped-character (and #\\ (! newline) #.`(or ,@(coerce  "-\\`|*_{}[]()#+.!<>" 'list)))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defparameter %extended-escape-char-rules% nil))
+(defrule extended-escape-character #. (cons 'or %extended-escape-char-rules%))
+(defrule escaped-character (and #\\ (! newline)
+                                #.`(or ,@(coerce  "-\\`|*_{}[]()#+.!<>" 'list)
+                                       'extended-escape-character))
   (:destructure (\\ n c)
                 (declare (ignore \\ n))
                 c))
