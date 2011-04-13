@@ -47,7 +47,7 @@
         (before (cdr (assoc :before options))))
     `(progn
        ;; define the flag to make the trivial case easier
-       (defvar ,extension-flag)
+       (defvar ,extension-flag nil)
        ;; define a rule for extension chars if any
        ,@ (when characters
             `((defrule ,(first characters)
