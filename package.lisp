@@ -13,8 +13,17 @@
            #:define-extension-inline
            ))
 
-(defpackage #:3bmd
+(defpackage #:3bmd-ext
   (:use :cl :3bmd-grammar)
+  (:export #:define-extension-inline
+           #:print-label-to-string
+           #:print-tagged-element
+           #:print-element
+           #:expand-tabs
+           ))
+
+(defpackage #:3bmd
+  (:use :cl :3bmd-grammar #:3bmd-ext)
   (:export #:parse-string
            #:parse-string-and-print-to-stream
            #:parse-and-print-to-stream
@@ -23,17 +32,5 @@
            ))
 
 
-(defpackage #:3bmd-ext
-  (:use :cl :3bmd-grammar)
-  (:import-from :3bmd
-                3bmd::print-label-to-string
-                3bmd::print-tagged-element
-                3bmd::print-element
-                3bmd::expand-tabs)
-  (:export #:define-extension-inline
-           #:print-label-to-string
-           #:print-tagged-element
-           #:print-element
-           #:expand-tabs
-           ))
+
 
