@@ -105,6 +105,7 @@
                       (and (+ character) eof) ))
 (defrule optionally-indented-line (and (? indent) line)
   (:destructure (i l)
+                (declare (ignore i))
                 l))
 
 (defrule block-quote (+ (and (and #\> (? #\space) line)
