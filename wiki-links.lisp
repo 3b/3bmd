@@ -28,7 +28,7 @@
                            "]]")
   (:destructure ([ label args ])
                 (declare (ignore [ ]))
-                (list :wiki-link :label label :args (mapcar 'second args))))
+                (list 'wiki-link :label label :args (mapcar 'second args))))
 
 (defrule quoted-wiki-link (and #\'
                                ;; would be nicer to just use wiki-link
@@ -47,7 +47,7 @@
 (define-extension-inline *wiki-links* wiki-link
     (or quoted-wiki-link normal-wiki-link)
   (:character-rule wiki-link-extended-chars #\| #\' #\=)
-  (:after 3bmd-grammar::emph))
+  (:after 3bmd-grammar:emph))
 
 
 
@@ -64,7 +64,9 @@
     (declare (ignore w nt a))
     (format stream "~a" formatted)))
 
-(defmethod print-tagged-element ((tag (eql :wiki-link)) stream rest)
+;; note that we specialize on a symbol in our package rather than a
+;; keyword, to avoid conflicts with other extensions
+(defmethod print-tagged-element ((tag (eql 'wiki-link)) stream rest)
   (destructuring-bind (&key label args) rest
     (let ((formatted (with-output-to-string (s)
                        (loop for i in label do (print-element i s))))
