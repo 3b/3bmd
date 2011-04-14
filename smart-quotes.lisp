@@ -19,7 +19,7 @@
 (defrule em-dash "---"
   (:lambda (a) (list :em-dash a)))
 (defrule en-dash "--"
-  (:lambda (a) (cons :en-dash a)))
+  (:lambda (a) (list :en-dash a)))
 
 (defrule single-quote-start (and #\'
                                  (! #.`(or ,@(coerce ")!],.;:-?" 'list)
