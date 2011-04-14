@@ -20,7 +20,7 @@
     (mapcar 'third a)))
 
 (defrule wiki-link-arg (* (and (! "|") (! "]]") character))
-  (:concat t))
+  (:text t))
 (defrule normal-wiki-link (and
                            "[["
                            wiki-link-label
@@ -42,7 +42,7 @@
                                "]]")
   (:destructure (q &rest link)
                 (declare (ignore q))
-                (concat link)))
+                (text link)))
 
 (define-extension-inline *wiki-links* wiki-link
     (or quoted-wiki-link normal-wiki-link)
