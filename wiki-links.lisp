@@ -1,5 +1,5 @@
 (defpackage #:3bmd-wiki
-  (:use #:cl #:esrap #:3bmd-grammar #:3bmd)
+  (:use #:cl #:esrap #:3bmd-ext)
   (:export #:*wiki-links*
            #:*wiki-links*
            #:*wiki-processor*
@@ -44,7 +44,7 @@
                 (declare (ignore q))
                 (concat link)))
 
-(3bmd-grammar::define-extension-inline *wiki-links* wiki-link
+(define-extension-inline *wiki-links* wiki-link
     (or quoted-wiki-link normal-wiki-link)
   (:character-rule wiki-link-extended-chars #\| #\' #\=)
   (:after 3bmd-grammar::emph))
@@ -64,13 +64,13 @@
     (declare (ignore w nt a))
     (format stream "~a" formatted)))
 
-(defmethod 3bmd::print-tagged-element ((tag (eql :wiki-link)) stream rest)
+(defmethod print-tagged-element ((tag (eql :wiki-link)) stream rest)
   (destructuring-bind (&key label args) rest
     (let ((formatted (with-output-to-string (s)
-                       (loop for i in label do (3bmd::print-element i s))))
+                       (loop for i in label do (print-element i s))))
           ;; todo: figure out how to normalize formatted links, or
           ;; restrict the grammar to disalow them
-          (normalized (3bmd::print-label-to-string label)))
+          (normalized (print-label-to-string label)))
       (process-wiki-link *wiki-processor* normalized formatted args stream))))
 
 
