@@ -225,7 +225,7 @@
   (print-escaped elem stream))
 
 (defmethod print-element ((elem cons) stream)
-  (if (keywordp (car elem))
+  (if (symbolp (car elem))
       (print-tagged-element (car elem) stream (cdr elem))
       (error "unknown cons? ~s" elem)))
 
