@@ -233,12 +233,11 @@
 
 (defun extract-refs (doc)
   (alexandria:alist-hash-table
-   (print
-    (loop for i in doc
-       when (and (consp i) (eq (car i) :reference))
-       collect (list (print-label-to-string (getf (cdr i) :label))
-                     (getf (cdr i) :source)
-                     (getf (cdr i) :title))))
+   (loop for i in doc
+      when (and (consp i) (eq (car i) :reference))
+      collect (list (print-label-to-string (getf (cdr i) :label))
+                    (getf (cdr i) :source)
+                    (getf (cdr i) :title)))
    :test #'equalp))
 
 (defun expand-tabs (doc &key add-newlines)

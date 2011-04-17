@@ -554,7 +554,7 @@
 (defrule source (or (and "<" source-contents ">") source-contents)
   (:lambda (a)
     (if (and (consp a) (eql (car a) "<"))
-        (progn (format t "link with < -> ~s~%" (second a)) (second a))
+        (second a)
         a)))
 (defrule source-contents (or (* (or (+ (and (! "(") (! ")") (! #\>) non-space-char))
                                     (and "(" source-contents ")")))
