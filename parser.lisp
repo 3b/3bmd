@@ -227,7 +227,7 @@
   (:constant :bullet-list))
 (defrule bullet-list (and (& bullet) (or list-tight list-loose))
   (:destructure (a b)
-                (cons a b)))
+                (cons :bullet-list b)))
 
 (defrule enumerator (and nonindent-space (+ dec-digit) #\. (+ space-char))
   (:constant :counted-list))
