@@ -85,10 +85,12 @@
                 block))
 
 (defun parse-doc (a)
-  #++(parse 'doc a)
+  (parse 'doc a)
   ;; ~2-5x faster and much less ram use on a big document than parsing 'doc
   ;; directly, not sure it is 100% equivalent though
-  (loop
+  ;; ... unfortunately, some smaller examples hit the lack of caching hard,
+  ;; so switching back to full parse
+  #++(loop
      for start = 0 then pos
      for (block pos) = (multiple-value-list (parse 'block a
                                                    :start start
