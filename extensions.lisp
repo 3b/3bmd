@@ -56,7 +56,7 @@
               (setf %extended-special-char-rules%
                     (add-expression-to-list ',(first characters)
                                             %extended-special-char-rules%))
-              (esrap:modify-rule-expression 'extended-special-char
+              (esrap:change-rule 'extended-special-char
                                             (cons 'or %extended-special-char-rules%))))
           ;; define a rule for escaped chars if any
        ,@ (when escapes
@@ -66,7 +66,7 @@
               (setf %extended-escape-char-rules%
                     (add-expression-to-list ',(first escapes)
                                             (cons 'or %extended-escape-char-rules%)))
-              (esrap:modify-rule-expression
+              (esrap:change-rule
                'extended-escape-character
                %extended-escape-char-rules%)))
           ;; define extension rule, passing any left-over args to esrap
@@ -82,5 +82,5 @@
                                      %inline-rules%
                                      ,@(when before `(:before ',before))
                                      ,@(when after `(:after ',after)) ))
-       (esrap:modify-rule-expression 'inline (cons 'or %inline-rules%)))))
+       (esrap:change-rule 'inline (cons 'or %inline-rules%)))))
 
