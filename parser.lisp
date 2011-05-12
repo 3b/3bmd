@@ -62,7 +62,10 @@
 
 
 
-(defrule doc (* block))
+(defrule doc (and (* block) (* blank-line))
+  (:destructure (content blanks)
+                (declare (ignore blanks))
+                content))
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defparameter %block-rules% '(block-quote
                                 verbatim
