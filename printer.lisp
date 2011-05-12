@@ -82,6 +82,20 @@
 (defmethod print-tagged-element ((tag (eql :link)) stream rest)
   (format stream "<a href=\"~a\">~a</a>" (car rest) (car rest)))
 
+(defun encode-email (text)
+  (with-output-to-string (s)
+    (loop for i across text
+       for r = (random 1.0)
+       do (cond
+            ((< r 0.1) (write-char i s))
+            ;; fixme: make this portable to non-unicode/ascii lisps?
+            ((< r 0.6) (format s "&#x~x;" (char-code i)))
+            (t (format s "&#~d;" (char-code i)))))))
+
+(defmethod print-tagged-element ((tag (eql :mailto)) stream rest)
+  (format stream "<a href=\"~a\">~a</a>" (encode-email (car rest))
+          (encode-email (car rest))))
+
 (defmethod print-tagged-element ((tag (eql :explicit-link)) stream rest)
   (format stream "<a href=\"~a\" ~@[title=\"~a\"~]>"
           (getf rest :source)

@@ -5,7 +5,6 @@ Currently a bit slow and uses lots of RAM for large documents (particularly when
 todo:
 
 * clean up API
-* obfuscate `mailto:` links
 * figure out how to automate testing (closure-html + `tree-equal`? need some way to normalize whitespace though), and add tests
 * optimize grammar
 * optimize esrap

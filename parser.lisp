@@ -549,7 +549,7 @@
                             #\>)
   (:destructure (< url1 url2 url3 >)
                 (declare (ignore < >))
-                (list :link (text "mailto:" url1 url2 url3))))
+                (list :mailto (text "mailto:" url1 url2 url3))))
 
 (defrule label (and #\[ (* (and (! #\]) inline)) #\])
   (:destructure ([ label ])
