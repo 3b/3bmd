@@ -619,8 +619,8 @@
                                                   (+ (and (! (or #\> #\' #\"))
                                                           non-space-char)))))
                              spnl))
-(defrule quoted (or (and #\" (+ (and (! #\") character)) #\")
-                    (and #\' (+ (and (! #\') character)) #\')))
+(defrule quoted (or (and #\" (* (and (! #\") character)) #\")
+                    (and #\' (* (and (! #\') character)) #\')))
 
 (defrule entity (or hex-entity dec-entity char-entity)
   (:lambda (a)
