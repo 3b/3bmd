@@ -36,3 +36,20 @@ todo:
      If `3bmd-wiki:*wiki-links*` is non-`NIL` while parsing, wiki links of the form `[[foo]]` or `[[foo|...]]` will be parsed, where `...` is one or more optional args separated by `|` characters.  
     By default, wiki links will just print the `foo` part as normal text. To integrate into an actual wiki, users should bind `3bmd-wiki:*wiki-processor*` during printing, and define a method on `3bmd-wiki:process-wiki-link` that specializes on the value of `3bmd-wiki:*wiki-processor*` to create an HTML link from the `foo` and arguments. (API subject to change.)  
     
+
+* Loading `3bmd-ext-code-blocks.asd` adds support for github style fenced code blocks, with `colorize` support:  
+      If `3bmd-code-blocks:*code-blocks*` is non-`NIL` while parsing, in addition to normal indented verbatim blocks, ```` ``` ```` can be used to delimit blocks of code:  
+
+        ```
+        This block doesn't specify a language for colorization
+        ```
+    or  
+
+        ```lisp
+        ;;; this block will be colorized as Common Lisp
+        (defun foo (bar)
+          (list bar))
+        ```
+
+    Language names ignore case and whitespace, so `Common Lisp` and `commonlisp` are treated the same, see `3bmd:*colorize-name-map*` for full list of supported language names, or add names to that to recognize a custom colorize `coloring-type`.  
+    If a language name is not specified after the opening ```` ``` ````, `3bmd-code-blocks:*code-blocks-default-colorize*` can be set to one of the keywords naming a `coloring-type` recognized by `colorize` to specify a default, otherwise the block will not be colorized.
