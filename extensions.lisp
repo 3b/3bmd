@@ -39,8 +39,7 @@
               (push new (cdr (nthcdr (1- min) list)))
               list)))))
 
-
-(defmacro define-extension-inline (extension-flag name expression &body options)
+(defun %make-definer (extension-flag name expression options var rule exp)
   (let ((characters (cdr (assoc :character-rule options)))
         (escapes (cdr (assoc :escape-char-rule options)))
         (after (cdr (assoc :after options)))
@@ -77,10 +76,18 @@
                                           :escape-char-rule
                                           :after :before)))
                       options))
-       (setf %inline-rules%
+       (setf ,var
              (add-expression-to-list ',name
-                                     %inline-rules%
+                                     ,var
                                      ,@(when before `(:before ',before))
                                      ,@(when after `(:after ',after)) ))
-       (esrap:change-rule 'inline (cons 'or %inline-rules%)))))
+       (esrap:change-rule ',rule ,exp))))
+
+(defmacro define-extension-inline (extension-flag name expression &body options)
+  (%make-definer extension-flag name expression options '%inline-rules% 'inline
+                 '(cons 'or %inline-rules%)))
+
+(defmacro define-extension-block (extension-flag name expression &body options)
+  (%make-definer extension-flag name expression options '%block-rules% 'block
+                 '`(and (* blank-line) (or ,@%block-rules%))))
 

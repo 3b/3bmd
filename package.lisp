@@ -11,11 +11,13 @@
            ;; normal API stuff
            #:*smart-quotes*
            #:define-extension-inline
+           #:define-extension-block
            ))
 
 (defpackage #:3bmd-ext
   (:use :cl :3bmd-grammar)
   (:export #:define-extension-inline
+           #:define-extension-block
            #:print-label-to-string
            #:print-tagged-element
            #:print-element
