@@ -77,7 +77,7 @@
     (let* ((clang (or (find-coloring-type lang)
                       *code-blocks-default-colorize*))
            (formatted (if clang
-                          (let (((colorize::*css-background-class* "code")))
+                          (let ((colorize::*css-background-class* "code"))
                             (colorize::html-colorization clang content))
                           content)))
       (3bmd::padded (2 stream)
@@ -90,7 +90,7 @@
 (defmethod print-tagged-element :around ((tag (eql :code)) stream rest)
   (if *colorize-code-spans-as*
       (format stream "~a"
-              (let (((colorize::*css-background-class* "code")))
+              (let ((colorize::*css-background-class* "code"))
                 (colorize::html-colorization *colorize-code-spans-as*
                                              (text rest))))
       (call-next-method)))
