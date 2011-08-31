@@ -64,10 +64,10 @@
                 (:when ,extension-flag))
               (setf %extended-escape-char-rules%
                     (add-expression-to-list ',(first escapes)
-                                            (cons 'or %extended-escape-char-rules%)))
+                                            %extended-escape-char-rules%))
               (esrap:change-rule
                'extended-escape-character
-               %extended-escape-char-rules%)))
+               (cons 'or %extended-escape-char-rules%))))
           ;; define extension rule, passing any left-over args to esrap
        (defrule ,name ,expression
          (:when ,extension-flag)
