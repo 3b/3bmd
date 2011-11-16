@@ -227,13 +227,13 @@
   (:constant :bullet-list))
 (defrule bullet-list (and (& bullet) (or list-tight list-loose))
   (:destructure (a b)
-                (cons a b)))
+                (cons :bullet-list b)))
 
 (defrule enumerator (and nonindent-space (+ dec-digit) #\. (+ space-char))
   (:constant :counted-list))
 (defrule ordered-list (and (& enumerator) (or list-tight list-loose))
   (:destructure (a b)
-                (cons a b)))
+                (cons :counted-list b)))
 
 
 (defrule list-tight (and (+ list-item-tight)
@@ -447,8 +447,9 @@
                                  symbol)
     "internal hook for extending 'inline' grammar, don't modify directly"))
 
+(defrule inline-extensions (or ))
 
-(defrule inline #. (cons 'or %inline-rules%))
+(defrule inline #. (list* 'or 'inline-extensions %inline-rules%))
 
 (defrule maybe-alphanumeric (& alphanumeric)
   (:constant ""))

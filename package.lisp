@@ -31,8 +31,5 @@
            #:parse-and-print-to-stream
            #:print-doc-to-stream
            #:*smart-quotes*
+           #:print-tagged-element
            ))
-
-
-
-
