@@ -233,7 +233,7 @@
   (:constant :counted-list))
 (defrule ordered-list (and (& enumerator) (or list-tight list-loose))
   (:destructure (a b)
-                (cons a b)))
+                (cons :counted-list b)))
 
 
 (defrule list-tight (and (+ list-item-tight)
