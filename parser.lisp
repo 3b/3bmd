@@ -610,11 +610,11 @@
     (list :raw-html a)))
 (defrule html-comment (and "<!--" (* (and (! "-->") character)) "-->")
   (:text t))
-(defrule html-tag (and #\< spnl (? #\/) (+ alphanumeric-ascii)
+(defrule html-tag (and #\< spnl (? #\/) (+ (or alphanumeric-ascii #\:))
                        spnl (* html-attribute)
                        (? #\/) #\>)
   (:text t))
-(defrule html-attribute (and (+ (or alphanumeric-ascii #\-)) spnl
+(defrule html-attribute (and (+ (or alphanumeric-ascii #\- #\:)) spnl
                              (? (and "=" spnl (or quoted
                                                   (+ (and (! (or #\> #\' #\"))
                                                           non-space-char)))))
