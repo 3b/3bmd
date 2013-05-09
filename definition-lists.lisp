@@ -47,8 +47,7 @@
                      (3bmd-grammar::parse-doc (text a)))
                    (split-sequence:split-sequence
                     :split  (list* block blank (mapcan 'identity cont))
-                    :remove-empty-subseqs t))))
-  )
+                    :remove-empty-subseqs t)))))
 
 
 
@@ -77,81 +76,6 @@
     line))
 
 
-
-
-#++
-(defrule definition-list-tight (and (+ definition-list-item-tight)
-                         (* 3bmd-grammar::blank-line)
-                         (! definition-marker))
-  (:destructure (items i1 i2)
-                (declare (ignore i1 i2))
-                items))
-
-#++
-(defrule definition-list-item-tight (and definition-marker
-                                         definition-list-block
-                                         (* (and (! 3bmd-grammar::blank-line)
-                                                 definition-list-continuation-block))
-                                         (! definition-list-continuation-block))
-  (:destructure (b block cont e)
-    (declare (ignore b e))
-    ;; fixme: figure out how to handle nested definition lists?
-    (progn                             ;let ((*definition-lists* nil))
-      (list* :definition-list-item1
-             (mapcan (lambda (a)
-                       (3bmd::parse-doc (text a)))
-                     (split-sequence:split-sequence
-                      :split (cons block
-                                   (mapcan 'second cont))
-                      :remove-empty-subseqs t))))))
-#++
-(defrule definition-list-loose (and (+ (and definition-list-item
-                                            (* 3bmd-grammar::blank-line))))
-  (:destructure (items)
-                (mapcar 'first items)))
-#++
-(defrule definition-list-item (and definition-marker
-                                   definition-list-block
-                                   (* definition-list-continuation-block))
-  (:destructure (b block cont)
-    (declare (ignore b))
-    (progn ;let ((*definition-lists* nil))
-      (list* 'definition-list-item
-             (mapcan (lambda (a)
-                       (3bmd-grammar:parse-doc (text a)))
-                     (split-sequence:split-sequence
-                      :split (append (cons block (mapcan 'identity cont))
-                                     (list "
-
-"))
-                      :remove-empty-subseqs t))))
-    ))
-
-#++
-(defrule definition-list-block (and (! 3bmd-grammar::blank-line)
-                                    3bmd-grammar::line
-                                    (* definition-list-block-line))
-  (:destructure (b l block)
-                (declare (ignore b))
-                (text l block)))
-#++
-(defrule definition-list-continuation-block (and (* 3bmd-grammar::blank-line)
-                                                 (+ (and 3bmd-grammar::indent
-                                                         definition-list-block)))
-  (:destructure (b c)
-                (if b
-                    (cons (text b) (mapcar 'second c))
-                    (cons :split (mapcar 'second c)))))
-#++
-(defrule definition-list-block-line (and (! 3bmd-grammar::blank-line)
-                                        (! (and (? 3bmd-grammar::indent)
-                                                definition-marker))
-                              (! 3bmd-grammar::horizontal-rule)
-                              3bmd-grammar::optionally-indented-line)
-  (:destructure (i1 i2 i3 line)
-                (declare (ignore i1 i2 i3))
-                line))
-
 (defrule definition-terms (and 3bmd-grammar::nonindent-space
                                (! definition-marker)
                                definition-term-inlines)
@@ -165,12 +89,13 @@
                                      3bmd-grammar::newline
                                      (& 3bmd-grammar::blank-line)))
   (:text t))
+
 (defrule definition-term-inlines (+ (and (! definition-marker)
                                          (+ (and (! 3bmd-grammar::endline)
                                                  3bmd-grammar::inline))
                                          definition-endline))
   (:destructure (&rest terms)
-    (mapcar (lambda (a) (mapcar (lambda (b) 
+    (mapcar (lambda (a) (mapcar (lambda (b)
                                   (or (first b) (second b)))
                                 (second a)))
             terms)))
@@ -321,7 +246,6 @@ e f
 * a
 "))
 
-#++(esrap:untrace-rule 'definition-list :recursive t)
 
 #++
 (with-output-to-string (s)
