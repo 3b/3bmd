@@ -60,12 +60,11 @@
 (defrule ascii-character (ascii-char-p character))
 (defrule alphanumeric-ascii (ascii-char-p character))
 
-
-
 (defrule doc (and (* block) (* blank-line))
   (:destructure (content blanks)
                 (declare (ignore blanks))
                 content))
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defparameter %block-rules% '(block-quote
                                 verbatim
@@ -102,12 +101,11 @@
      collect block
      while pos))
 
-
 (defrule line raw-line
   (:text t))
 (defrule raw-line (or (and (* (and (! #\newline) (! #\return) character))
                            newline)
-                      (and (+ character) eof) ))
+                      (and (+ character) eof)))
 (defrule optionally-indented-line (and (? indent) line)
   (:destructure (i l)
                 (declare (ignore i))
