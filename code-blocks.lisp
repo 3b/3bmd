@@ -2,6 +2,7 @@
   (:use #:cl #:esrap #:3bmd-ext)
   (:export #:*code-blocks*
            #:*code-blocks-default-colorize*
+           #:*code-blocks-pre-class*
            ))
 (in-package #:3bmd-code-blocks)
 
@@ -11,6 +12,11 @@
   "a colorize coloring type name, like :common-lisp or :elisp ")
 (defparameter *colorize-code-spans-as* nil)
 (defparameter *colorize-verbatim-block-as* nil)
+
+(defparameter *code-blocks-pre-class* nil
+  "css class to use for <pre> blocks (for ``` blocks)")
+(defparameter *code-blocks-span-class* nil
+  "css class to use for <span> blocks")
 
 (defparameter *colorize-name-map*
   ;; names are downcased and whitespace,-,_ removed before looking them up
@@ -81,7 +87,7 @@
                             (colorize::html-colorization clang content))
                           content)))
       (3bmd::padded (2 stream)
-        (format stream "<pre><code>")
+        (format stream "<pre~@[ class=~a~]><code>" *code-blocks-pre-class*)
         (format stream "~a" formatted)
         (format stream "</code></pre>")))))
 
