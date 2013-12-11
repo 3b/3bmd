@@ -273,19 +273,24 @@
     (when add-newlines
       (format s "~%~%"))))
 
-(defun print-doc-to-stream (doc stream)
+
+(defmethod print-doc-to-stream-using-format (doc stream (format (eql :html)))
   (let ((*references* (extract-refs doc)))
     (loop for i in doc
-       do (print-element i stream))
+          do (print-element i stream))
     (format stream "~&")))
 
-(defun parse-and-print-to-stream (file stream)
+(defun print-doc-to-stream (doc stream &key (format :html))
+  (print-doc-to-stream-using-format doc stream format))
+
+(defun parse-and-print-to-stream (file stream &key (format :html))
   (let* ((input (expand-tabs (alexandria:read-file-into-string file)
                              :add-newlines t))
          (doc (3bmd-grammar::parse-doc input)))
-    (print-doc-to-stream doc stream)))
+    (print-doc-to-stream doc stream :format format)))
 
-(defun parse-string-and-print-to-stream (string stream)
+(defun parse-string-and-print-to-stream (string stream &key (format :html))
   (let* ((input (expand-tabs string :add-newlines t)))
-    (print-doc-to-stream (3bmd-grammar::parse-doc input) stream)))
+    (print-doc-to-stream (3bmd-grammar::parse-doc input) stream
+                         :format format)))
 

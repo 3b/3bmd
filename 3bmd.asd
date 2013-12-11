@@ -6,4 +6,5 @@
                (:file "parser")
                (:file "extensions")
                (:file "smart-quotes")
-               (:file "printer")))
+               (:file "printer")
+               (:file "plain-printer")))
