@@ -3,6 +3,8 @@
   (:export #:*code-blocks*
            #:*code-blocks-default-colorize*
            #:*code-blocks-pre-class*
+           #:*code-blocks-span-class*
+           #:*colorize-code-spans-as*
            ))
 (in-package #:3bmd-code-blocks)
 
@@ -16,7 +18,7 @@
 (defparameter *code-blocks-pre-class* nil
   "css class to use for <pre> blocks (for ``` blocks)")
 (defparameter *code-blocks-span-class* nil
-  "css class to use for <span> blocks")
+  "css class to use for <span>s from colorized `` inlines")
 
 (defparameter *colorize-name-map*
   ;; names are downcased and whitespace,-,_ removed before looking them up
@@ -87,7 +89,7 @@
                             (colorize::html-colorization clang content))
                           content)))
       (3bmd::padded (2 stream)
-        (format stream "<pre~@[ class=~a~]><code>" *code-blocks-pre-class*)
+        (format stream "<pre~@[ class=\"~a\"~]><code>" *code-blocks-pre-class*)
         (format stream "~a" formatted)
         (format stream "</code></pre>")))))
 
@@ -96,7 +98,8 @@
 (defmethod print-tagged-element :around ((tag (eql :code)) stream rest)
   (if *colorize-code-spans-as*
       (format stream "~a"
-              (let ((colorize::*css-background-class* "code"))
+              (let ((colorize::*css-background-class* (or *code-blocks-span-class*
+                                                          "code")))
                 (colorize::html-colorization *colorize-code-spans-as*
                                              (text rest))))
       (call-next-method)))
