@@ -118,7 +118,7 @@
                 (cons :block-quote
                       (parse-doc
                        (text
-                        (loop for ((> sp l1) (lines) (blank)) in chunks
+                        (loop for ((> sp l1) lines (blank)) in chunks
                            collect l1
                            collect lines
                            collect blank)
