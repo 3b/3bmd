@@ -5,7 +5,7 @@
            #:*code-blocks-pre-class*
            #:*code-blocks-span-class*
            #:*colorize-code-spans-as*
-           ))
+           #:*code-blocks-coloring-type-remap*))
 (in-package #:3bmd-code-blocks)
 
 ;;; github style ``` delimited code blocks, with colorize support
@@ -14,6 +14,13 @@
   "a colorize coloring type name, like :common-lisp or :elisp ")
 (defparameter *colorize-code-spans-as* nil)
 (defparameter *colorize-verbatim-block-as* nil)
+
+;;; allow remapping coloring types
+;;;  for example if there is a coloring type ":lisp-with-extra-symbols" defined,
+;;;  but the markdown files use "```lisp", bind a hash table with
+;;;  key :lisp -> value :lisp-with-extra-symbols while printing
+(defparameter *code-blocks-coloring-type-remap* nil
+  "bind to a hash table mapping symbols to symbols to remap coloring types.")
 
 (defparameter *code-blocks-pre-class* nil
   "css class to use for <pre> blocks (for ``` blocks)")
@@ -44,12 +51,15 @@
                                :test #'equal))
 
 (defun find-coloring-type (name)
-  (let ((n (string-downcase (remove-if (lambda (a)
-                                         (member a '(#\space #\tab #\newline
-                                                     #\return #\_ #\-)
-                                                 :test 'char=))
-                                       name))))
-    (gethash n *colorize-name-map*)))
+  (let* ((n (string-downcase (remove-if (lambda (a)
+                                          (member a '(#\space #\tab #\newline
+                                                      #\return #\_ #\-)
+                                                  :test 'char=))
+                                        name)))
+         (s (gethash n *colorize-name-map*)))
+    (or (and *code-blocks-coloring-type-remap*
+             (gethash s *code-blocks-coloring-type-remap*))
+        s)))
 
 
 ;;; we start with ``` optionally followed by a language name on same line
