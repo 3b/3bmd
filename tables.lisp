@@ -37,7 +37,7 @@
 (defrule table-cell (and sp (+ table-cell-character) sp #\|)
   (:destructure (_ content &rest __)
     (declare (ignore _ __))
-    (string-right-trim '(#\space #\tab) (coerce content 'string))))
+    (parse 'block (string-right-trim '(#\space #\tab) (coerce content 'string)))))
 
 (defrule table-row (and #\| (+ table-cell) newline)
   (:destructure (_ cells __)
@@ -105,42 +105,48 @@
 (use-package :should-test)
 
 (deftest parse-table ()
-  (should be equal
-          '(table (((th "First Header") (th "second Header"))
-                   ((td "Content Cell") (td "Content Cell"))
-                   ((td "Content Cell") (td "Content Cell"))))
+  (should be equal '((table
+                      ((th (:plain "First" " " "Header") nil)
+                       (th (:plain "Second" " " "Header") nil))
+                      ((td (:plain "Content" " " "Cell") nil)
+                       (td (:plain "Content" " " "Cell") nil))
+                      ((td (:plain "Content" " " "Cell") nil)
+                       (td (:plain "Content" " " "Cell") nil))))
           (parse-doc "
 | First Header  | Second Header |
 | ------------- | ------------- |
 | Content Cell  | Content Cell  |
 | Content Cell  | Content Cell  |
 "))
-  (should be equal
-          '(table (((th "Name") (th "Description"))
-                   ((td "Help") (td "Display the help window."))
-                   ((td "Close") (td "Closes a window"))))
+  (should be equal '((table
+                      ((th (:plain "Name") nil)
+                       (th (:plain "Description") nil))
+                      ((td (:plain "Help") nil)
+                       (td (:plain "Display" " " "the" " " "help" " " "window.") nil))
+                      ((td (:plain "Close") nil)
+                       (td (:plain "Closes" " " "a" " " "window") nil))))
           (parse-doc "
 | Name | Description          |
 | ------------- | ----------- |
 | Help      | Display the help window.|
 | Close     | Closes a window     |
-"))  (should be equal
-          '(table (((th "Left-Aligned" left)
-                    (th "Center Aligned" center)
-                    (th "Right Aligned" right))
-                   ((td "col 3 is" left)
-                    (td "some wordy text" center)
-                    (td "$1600" right))
-                   ((td "col 2 is" left)
-                    (td "centered" center)
-                    (td "$12" right))
-                   ((td "zebra stripes" left)
-                    (td "are neat" center)
-                    (td "$1" right))))
+"))  (should be equal '((table
+                         ((th (:plain "Left-Aligned") left)
+                          (th (:plain "Center" " " "Aligned") center)
+                          (th (:plain "Right" " " "Aligned") right))
+                         ((td (:plain "col" " " (:code "3") " " "is") left)
+                          (td (:plain "some" " " "wordy" " " "text") center)
+                          (td (:plain "$1600") right))
+                         ((td (:plain "col" " " "2" " " "is") left)
+                          (td (:plain "centered") center)
+                          (td (:plain "$12") right))
+                         ((td (:plain "zebra" " " "stripes") left)
+                          (td (:plain "are" " " "neat") center)
+                          (td (:plain "$1") right))))
           (parse-doc "
 | Left-Aligned  | Center Aligned  | Right Aligned |
 | :------------ |:---------------:| -----:|
-| col 3 is      | some wordy text | $1600 |
+| col `3` is    | some wordy text | $1600 |
 | col 2 is      | centered        |   $12 |
 | zebra stripes | are neat        |    $1 |
 "))
