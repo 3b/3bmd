@@ -275,7 +275,9 @@
 
 
 (defmethod print-doc-to-stream-using-format (doc stream (format (eql :html)))
-  (let ((*references* (extract-refs doc)))
+  (let ((*references* (extract-refs doc))
+        ;; Protect the global value.
+        (*padding* *padding*))
     (loop for i in doc
           do (print-element i stream))
     (format stream "~&")))
