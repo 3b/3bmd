@@ -636,7 +636,7 @@
 (defrule extended-escape-character #. (cons 'or %extended-escape-char-rules%))
 (defrule escaped-character (and #\\ (! newline)
                                 #.`(or ,@(coerce  "-\\`|*_{}[]()#+.!<>" 'list)
-                                       'extended-escape-character))
+                                       extended-escape-character))
   (:destructure (\\ n c)
                 (declare (ignore \\ n))
                 c))
