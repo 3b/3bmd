@@ -31,18 +31,18 @@ todo:
     * left double arrow `<=` -> `&lArr;`, &lArr;
     * right double arrow `=>` -> `&rArr;`, &rArr;
 
-* Loading `3bmd-ext-wiki-links.asd` adds support for parsing simple [[]] style wiki links:  
-     If `3bmd-wiki:*wiki-links*` is non-`NIL` while parsing, wiki links of the form `[[foo]]` or `[[foo|...]]` will be parsed, where `...` is one or more optional args separated by `|` characters.  
-    By default, wiki links will just print the `foo` part as normal text. To integrate into an actual wiki, users should bind `3bmd-wiki:*wiki-processor*` during printing, and define a method on `3bmd-wiki:process-wiki-link` that specializes on the value of `3bmd-wiki:*wiki-processor*` to create an HTML link from the `foo` and arguments. (API subject to change.)  
-    
+* Loading `3bmd-ext-wiki-links.asd` adds support for parsing simple [[]] style wiki links:
+     If `3bmd-wiki:*wiki-links*` is non-`NIL` while parsing, wiki links of the form `[[foo]]` or `[[foo|...]]` will be parsed, where `...` is one or more optional args separated by `|` characters.
+    By default, wiki links will just print the `foo` part as normal text. To integrate into an actual wiki, users should bind `3bmd-wiki:*wiki-processor*` during printing, and define a method on `3bmd-wiki:process-wiki-link` that specializes on the value of `3bmd-wiki:*wiki-processor*` to create an HTML link from the `foo` and arguments. (API subject to change.)
 
-* Loading `3bmd-ext-code-blocks.asd` adds support for github style fenced code blocks, with `colorize` support:  
-      If `3bmd-code-blocks:*code-blocks*` is non-`NIL` while parsing, in addition to normal indented verbatim blocks, ```` ``` ```` can be used to delimit blocks of code:  
+
+* Loading `3bmd-ext-code-blocks.asd` adds support for github style fenced code blocks, with `colorize` support:
+      If `3bmd-code-blocks:*code-blocks*` is non-`NIL` while parsing, in addition to normal indented verbatim blocks, ```` ``` ```` can be used to delimit blocks of code:
 
         ```
         This block doesn't specify a language for colorization
         ```
-    or  
+    or
 
         ```lisp
         ;;; this block will be colorized as Common Lisp
@@ -50,5 +50,43 @@ todo:
           (list bar))
         ```
 
-    Language names ignore case and whitespace, so `Common Lisp` and `commonlisp` are treated the same, see `3bmd:*colorize-name-map*` for full list of supported language names, or add names to that to recognize a custom colorize `coloring-type`.  
+    Language names ignore case and whitespace, so `Common Lisp` and `commonlisp` are treated the same, see `3bmd:*colorize-name-map*` for full list of supported language names, or add names to that to recognize a custom colorize `coloring-type`.
     If a language name is not specified after the opening ```` ``` ````, `3bmd-code-blocks:*code-blocks-default-colorize*` can be set to one of the keywords naming a `coloring-type` recognized by `colorize` to specify a default, otherwise the block will not be colorized.
+
+* Loading `3bmd-ext-definition-lists.asd` adds support for parsing PHP Markdown Extra style definition lists
+     If `3bmd-definition-lists:*definition-lists*` is non-`NIL` while parsing, the following definition list will be recognized (see <http://michelf.ca/projects/php-markdown/extra/#def-list>):
+
+        Term
+        : definition
+
+* Loading `3bmd-ext-tables.asd` adds support for parsing PHP Markdown Extra style tables
+     If `3bmd-tables:*tables*` is non-`NIL` while parsing, the following will be recognized as tables (see <http://michelf.ca/projects/php-markdown/extra/#table>):
+
+        | Content Cell  | Content Cell  |
+        | Content Cell  | Content Cell  |
+
+        | First Header  | Second Header |
+        | ------------- | ------------- |
+        | Content Cell  | Content Cell  |
+        | Content Cell  | Content Cell  |
+
+        | Name | Description          |
+        | ------------- | ----------- |
+        | Help      | Display the help window.|
+        | Close     | Closes a window     |
+
+        | Left-Aligned  | Center Aligned  | Right Aligned |
+        | :------------ |:---------------:| -----:|
+        | col 3 is      | some wordy text | $1600 |
+        | col 2 is      | centered        |   $12 |
+        | zebra stripes | are neat        |    $1 |
+
+    The following simplified table style is not supported, because it is ambiguous,
+especially, without heading:
+
+    ```
+    First Header  | Second Header
+    ------------- | -------------
+    Content Cell  | Content Cell
+    Content Cell  | Content Cell
+    ```
