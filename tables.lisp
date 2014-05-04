@@ -29,27 +29,28 @@
 
 (in-package #:3bmd-grammar)
 
-(defun table-cell-char-p (char)
-  (not (member char '(#\Newline #\Return #\Linefeed #\|))))
 
-(defrule table-cell-character (table-cell-char-p character))
+(defrule table-cell (and #\|
+                         sp
+                         (+ (and (! (or (and sp #\|) endline)) inline))
+                         sp
+                         (& #\|))
+  (:destructure (_ __ content &rest ___)
+    (declare (ignore _ __ ___))
+    (mapcar 'second content)))
 
-(defrule table-cell (and sp (+ table-cell-character) sp #\|)
-  (:destructure (_ content &rest __)
+(defrule table-row (and (& #\|) (+ table-cell) #\| sp newline)
+  (:destructure (_ cells &rest __)
     (declare (ignore _ __))
-    (parse 'block (string-right-trim '(#\space #\tab) (coerce content 'string)))))
+    (mapcar (lambda (a) (cons :plain a)) cells)))
 
-(defrule table-row (and #\| (+ table-cell) newline)
-  (:destructure (_ cells __)
-    (declare (ignore _ __))
-    cells))
 
 (defrule table-align-cell (and sp (? #\:) (+ #\-) (? #\:) sp #\|)
   (:destructure (_ left __ right &rest ___)
     (declare (ignore _ __ ___))
     (if right (if left 'center 'right) (when left 'left))))
 
-(defrule table-align-row (and #\| (+ table-align-cell) newline)
+(defrule table-align-row (and #\| (+ table-align-cell) sp newline)
   (:destructure (_ aligns &rest __)
     (declare (ignore _ __))
     aligns))
@@ -149,6 +150,23 @@
 | col `3` is    | some wordy text | $1600 |
 | col 2 is      | centered        |   $12 |
 | zebra stripes | are neat        |    $1 |
+"))
+
+ (should be equal '((TABLE
+                     ((TH (:PLAIN "a") NIL)
+                      (TH (:PLAIN "b") NIL))
+                     ((TD (:PLAIN "1" " " "a" " " "b" (:CODE "|")) NIL)
+                      (TD (:PLAIN "2") NIL))
+                     ((TD (:PLAIN "3" " " "|") NIL)
+                      (TD (:PLAIN "4") NIL))
+                     ((TD (:PLAIN ">" " " "5") NIL)
+                      (TD (:PLAIN "#" "#" "#" " " "6") NIL))))
+         (parse-doc "
+| a | b |  
+|---|---|   
+|    1 a b`|`| 2 |  
+| 3 \\|| 4 |    
+| > 5 | ### 6 |
 "))
 )
 )
