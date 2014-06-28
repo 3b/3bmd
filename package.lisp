@@ -20,6 +20,7 @@
            #:define-extension-block
            #:print-label-to-string
            #:print-tagged-element
+           #:print-md-tagged-element
            #:print-element
            #:expand-tabs
            ))
