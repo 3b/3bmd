@@ -93,7 +93,8 @@
 (defmethod print-tagged-element ((tag (eql 'code-block)) stream rest)
   (destructuring-bind (&key lang content) rest
     (let* ((clang (or (find-coloring-type lang)
-                      *code-blocks-default-colorize*))
+                      (unless (and lang (string/= lang ""))
+                        *code-blocks-default-colorize*)))
            (formatted (if clang
                           (let ((colorize::*css-background-class* "code"))
                             (colorize::html-colorization clang content))
