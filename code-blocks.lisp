@@ -105,9 +105,9 @@
         (format stream "</code></pre>")))))
 
 (defmethod print-md-tagged-element ((tag (eql 'code-block)) stream rest)
-  (3bmd::ensure-paragraph stream)
+  (3bmd::ensure-block stream)
   (format stream "```~a~%~a~%```" (getf rest :lang) (getf rest :content))
-  (3bmd::end-paragraph stream))
+  (3bmd::end-block stream))
 
 
 ;;; fixme: add hooks to do this properly, so multiple extensions don't conflict
