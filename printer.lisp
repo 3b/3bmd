@@ -46,6 +46,17 @@
     (with-output-to-string (s)
       (print-escaped string s))))
 
+(defun print-pre-escaped (string stream)
+  (loop for c across string
+     when (eql c #\<) do (write-string "&lt;" stream)
+     else when (eql c #\>) do (write-string "&gt;" stream)
+     else do (write-char c stream)))
+
+(defun escape-pre-string (string)
+  (when string
+    (with-output-to-string (s)
+      (print-pre-escaped string s))))
+
 ;; todo: minimize extra newlines...
 (defmethod print-tagged-element ((tag (eql :heading)) stream rest)
   (padded (2 stream)

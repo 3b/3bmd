@@ -98,7 +98,7 @@
            (formatted (if clang
                           (let ((colorize::*css-background-class* "code"))
                             (colorize::html-colorization clang content))
-                          content)))
+                          (3bmd::escape-pre-string content))))
       (3bmd::padded (2 stream)
         (format stream "<pre~@[ class=\"~a\"~]><code>" *code-blocks-pre-class*)
         (format stream "~a" formatted)
