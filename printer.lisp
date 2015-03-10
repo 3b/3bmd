@@ -241,6 +241,9 @@
 (defmethod print-tagged-element ((tag (eql :reference)) stream rest)
   )
 
+(defmethod print-element ((elem null) stream)
+  "")
+
 (defmethod print-element ((elem (eql :apostrophe)) stream)
   (if *in-code*
       (format stream "'")

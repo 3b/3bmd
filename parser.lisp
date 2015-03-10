@@ -549,10 +549,10 @@
                 (declare (ignore < >))
                 (list :mailto (text "mailto:" url1 url2 url3))))
 
-(defrule label (and #\[ (* (and (! #\]) inline)) #\])
+(defrule label (and #\[ (* (and (! #\[) (! #\]) inline)) #\])
   (:destructure ([ label ])
                 (declare (ignore [ ]))
-                (mapcar 'second label)))
+                (mapcar 'third label)))
 
 (defrule source (or (and "<" source-contents ">") source-contents)
   (:lambda (a)
