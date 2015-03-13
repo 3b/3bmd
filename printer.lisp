@@ -96,13 +96,13 @@
 
 (defun encode-email (text)
   (with-output-to-string (s)
-    (loop for i across text
-       for r = (random 1.0)
+    (loop for i upfrom 0
+       for char across text
        do (cond
-            ((< r 0.1) (write-char i s))
+            ((= 0 (mod i 3)) (write-char char s))
             ;; fixme: make this portable to non-unicode/ascii lisps?
-            ((< r 0.6) (format s "&#x~x;" (char-code i)))
-            (t (format s "&#~d;" (char-code i)))))))
+            ((= 1 (mod i 3)) (format s "&#x~x;" (char-code char)))
+            (t (format s "&#~d;" (char-code char)))))))
 
 (defmethod print-tagged-element ((tag (eql :mailto)) stream rest)
   (format stream "<a href=\"~a\">~a</a>" (encode-email (car rest))
