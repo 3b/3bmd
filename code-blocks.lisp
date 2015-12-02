@@ -139,7 +139,7 @@
 ;-------------------------------------------------------------------------------
 ;;; extra parameters to be passed to the renderer
 (defrule code-block-params (and "|"
-                                (* (and (! 3bmd-grammar:newline) character)))
+                                (* (and (! 3bmd-grammar::newline) character)))
   (:destructure (vert params)
                 (declare (ignore vert))
                 (when params (text params))))
