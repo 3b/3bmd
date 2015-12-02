@@ -1,18 +1,43 @@
+;-------------------------------------------------------------------------------
+; Package and generics
+;-------------------------------------------------------------------------------
 (defpackage #:3bmd-code-blocks
   (:use #:cl #:esrap #:3bmd-ext)
-  (:export #:*code-blocks*
+  (:export #:render-code
+           #:render-code-block
+           #:*code-blocks*
+           #:*renderer*
+           #:*render-code-spans*
+           #:*render-code-spans-lang*
            #:*code-blocks-default-colorize*
            #:*code-blocks-pre-class*
            #:*code-blocks-span-class*
-           #:*colorize-code-spans-as*
            #:*code-blocks-coloring-type-remap*))
+
 (in-package #:3bmd-code-blocks)
 
 ;;; github style ``` delimited code blocks, with colorize support
 
+(defgeneric render-code-block (renderer stream lang params code)
+  (:documentation "Render CODE block written in LANG to STREAM"))
+
+(defgeneric render-code (renderer stream code)
+  (:documentation "Render CODE written in LANG to STREAM"))
+
+(defparameter *renderer* :colorize
+  "Select rendering back-end. :colorize and :pygments are implemented by default.")
+
+(defparameter *render-code-spans* nil
+  "Render in-line code spans.")
+
+(defparameter *render-code-spans-lang* nil
+  "Default language used in in-line code spans.")
+
+;-------------------------------------------------------------------------------
+; Colorize
+;-------------------------------------------------------------------------------
 (defparameter *code-blocks-default-colorize* nil
   "a colorize coloring type name, like :common-lisp or :elisp ")
-(defparameter *colorize-code-spans-as* nil)
 (defparameter *colorize-verbatim-block-as* nil)
 
 ;;; allow remapping coloring types
@@ -61,12 +86,74 @@
              (gethash s *code-blocks-coloring-type-remap*))
         s)))
 
+;;; todo: make the CSS class for colorized blocks configurable
+(defmethod render-code-block ((renderer (eql :colorize)) stream lang params code)
+  (let* ((clang (or (find-coloring-type lang)
+                    (unless (and lang (string/= lang ""))
+                      *code-blocks-default-colorize*)))
+         (formatted (if clang
+                        (let ((colorize::*css-background-class* "code"))
+                          (colorize::html-colorization clang code))
+                        (3bmd::escape-pre-string code))))
+    (3bmd::padded (2 stream)
+      (format stream "<pre~@[ class=\"~a\"~]><code>" *code-blocks-pre-class*)
+      (format stream "~a" formatted)
+      (format stream "</code></pre>"))))
+
+(defmethod render-code ((renderer (eql :colorize)) stream code)
+  (format stream "<code>~a</code>"
+          (let ((colorize::*css-background-class* (or *code-blocks-span-class*
+                                                      "code")))
+            (colorize::html-colorization *render-code-spans-lang* code))))
+
+;-------------------------------------------------------------------------------
+; Pygments
+;-------------------------------------------------------------------------------
+(defmethod render-code-block ((renderer (eql :pygments)) stream lang params code)
+  (let ((formated (inferior-shell:run (format nil
+                                              "pygmentize -f html ~@[-l ~a~] ~@[-O ~a~]"
+                                              lang params)
+                                      :input (make-string-input-stream code)
+                                      :output :string)))
+    (format stream "~a" formated)))
+
+(defmethod render-code ((renderer (eql :pygments)) stream code)
+  (let ((s (make-string-output-stream)))
+    (render-code-block renderer s *render-code-spans-lang* nil code)
+    (format stream "~a"
+            (reduce #'funcall
+                    (list
+                     (lambda (text) (cl-ppcre:regex-replace-all
+                                     "<div class=\"highlight\"><pre>"
+                                     text
+                                     "<span class=\"highlight\"><code>"))
+                     (lambda (text) (cl-ppcre:regex-replace-all
+                                     "</pre></div>"
+                                     text
+                                     "</code></span>"))
+                     (get-output-stream-string s))
+                    :from-end t))))
+
+;-------------------------------------------------------------------------------
+; Parsing
+;-------------------------------------------------------------------------------
+;;; extra parameters to be passed to the renderer
+(defrule code-block-params (and "|"
+                                (* (and (! 3bmd-grammar:newline) character)))
+  (:destructure (vert params)
+                (declare (ignore vert))
+                (when params (text params))))
 
 ;;; we start with ``` optionally followed by a language name on same line
-(defrule code-block-start (and "```" (* (and (! 3bmd-grammar::newline) character)) 3bmd-grammar::newline)
-  (:destructure (|`| lang nl)
+(defrule code-block-start (and "```"
+                               (* (and (! 3bmd-grammar::newline) (! "|") character))
+                               (? code-block-params)
+                               3bmd-grammar::newline)
+  (:destructure (|`| lang params nl)
                 (declare (ignore |`| nl))
-                (list 'code-block :lang (string-trim (list #\space #\tab) (text lang)))))
+                (list 'code-block
+                      :lang (string-trim (list #\space #\tab) (text lang))
+                      :params params)))
 
 ;;; and end with ``` on a line by itself
 (defrule code-block-end (and 3bmd-grammar::newline
@@ -89,37 +176,24 @@
                 (declare (ignore e))
                 (append s (list :content c))))
 
-;;; todo: make the CSS class for colorized blocks configurable
+;-------------------------------------------------------------------------------
+; Rendering
+;-------------------------------------------------------------------------------
 (defmethod print-tagged-element ((tag (eql 'code-block)) stream rest)
-  (destructuring-bind (&key lang content) rest
-    (let* ((clang (or (find-coloring-type lang)
-                      (unless (and lang (string/= lang ""))
-                        *code-blocks-default-colorize*)))
-           (formatted (if clang
-                          (let ((colorize::*css-background-class* "code"))
-                            (colorize::html-colorization clang content))
-                          (3bmd::escape-pre-string content))))
-      (3bmd::padded (2 stream)
-        (format stream "<pre~@[ class=\"~a\"~]><code>" *code-blocks-pre-class*)
-        (format stream "~a" formatted)
-        (format stream "</code></pre>")))))
+  (destructuring-bind (&key lang params content) rest
+    (render-code-block *renderer* stream lang params content)))
 
 (defmethod print-md-tagged-element ((tag (eql 'code-block)) stream rest)
   (3bmd::ensure-block stream)
-  (format stream "```~a~%~a~%```" (getf rest :lang) (getf rest :content))
+  (format stream "```~a~@[|~a~]~%~a~%```"
+          (getf rest :lang) (getf rest :params) (getf rest :content))
   (3bmd::end-block stream))
-
 
 ;;; fixme: add hooks to do this properly, so multiple extensions don't conflict
 (defmethod print-tagged-element :around ((tag (eql :code)) stream rest)
-  (if *colorize-code-spans-as*
-      (format stream "~a"
-              (let ((colorize::*css-background-class* (or *code-blocks-span-class*
-                                                          "code")))
-                (colorize::html-colorization *colorize-code-spans-as*
-                                             (text rest))))
+  (if *render-code-spans*
+      (render-code *renderer* stream (text rest))
       (call-next-method)))
-
 
 #++
 (let ((*code-blocks* t))
