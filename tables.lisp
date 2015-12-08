@@ -24,11 +24,13 @@
 ;; | zebra stripes | are neat        |    $1 |
 
 (defpackage #:3bmd-tables
-  (:export #:*tables*))
-
+  (:export #:*tables*
+           #:*table-class*))
 
 (in-package #:3bmd-grammar)
 
+(defparameter 3bmd-tables:*table-class* nil
+  "Table class to be used in the rendered HTML")
 
 (defrule table-cell (and #\|
                          sp
@@ -79,7 +81,7 @@
 
 (defmethod print-tagged-element ((tag (eql 'table)) stream rest)
   (padded (1 stream)
-    (format stream "<table>"))
+    (format stream "<table ~@[class=\"~a\"~]>" 3bmd-tables:*table-class*))
   (when (getf rest :head)
     (padded (1 stream)
       (format stream "<thead>"))
