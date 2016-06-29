@@ -2,6 +2,8 @@
   :description "markdown processor in CL using esrap parser."
   :depends-on (esrap split-sequence alexandria)
   :serial t
+  :license "MIT"
+  :author "Bart Botta <00003b at gmail.com>"
   :components ((:file "package")
                (:file "parser")
                (:file "extensions")
