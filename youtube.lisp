@@ -52,21 +52,3 @@
             (mapcar (lambda (x)
                       (format nil "~a~@[=\"~a\"~]" (car x) (cdr x)))
                     params))))
-
-#++
-(let ((3bmd-youtube:*youtube-embeds* t))
-  (esrap:parse 'inline "!yt[asdf]"))
-
-#++
-(let ((3bmd-youtube:*youtube-embeds* t))
-  (esrap:parse 'inline "!yt[asdf|width=600]"))
-
-#++
-(let ((3bmd-youtube:*youtube-embeds* t))
-  (with-output-to-string (s)
-    (3bmd:parse-string-and-print-to-stream "!yt[asdf]" s)))
-
-#++
-(let ((3bmd-youtube:*youtube-embeds* t))
-  (with-output-to-string (s)
-    (3bmd:parse-string-and-print-to-stream "!yt[asdf|width=20,allowfullscreen]" s)))
