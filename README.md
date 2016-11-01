@@ -90,3 +90,8 @@ especially, without heading:
     Content Cell  | Content Cell
     Content Cell  | Content Cell
     ```
+
+* Loading `3bmd-youtube.asd` adds support for. If `3bmd-youtube:*youtube-embeds*` is non-`NIL` while parsing, the shorthand syntax `!yt[video-id(|options)]` can be be used. For example
+
+        !yt[nbY-meOL57I]
+        !yt[nbY-meOL57I|width=20,allowfullscreen]"
