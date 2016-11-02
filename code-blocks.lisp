@@ -35,7 +35,13 @@
 ;; encoding
 ;; -l for lang and -O for parameters are currently hard coded as well
 (defparameter *pygments-args* '("-f" "html"
-                                "-P" "encoding=utf-8"))
+                                "-P" "encoding=utf-8"
+                                "-P" "noclobber_cssfile=True"))
+;; cssfile allows creating arbitrary files, so try to reject it
+;; todo: add an option to parse params and whitelist options instead
+;;   rejecting on substring match has false positives, and risks missing
+;;   future options
+(defparameter *pygments-reject-args* '("cssfile"))
 (defparameter *pygments-span-args* `("-P" "nowrap=True" ,@ *pygments-args*))
 
 (defparameter *render-code-spans* nil
@@ -121,6 +127,11 @@
 ; Pygments
 ;-------------------------------------------------------------------------------
 (defmethod render-code-block ((renderer (eql :pygments)) stream lang params code)
+  (when (and params
+             (loop for reject-word in *pygments-reject-args*
+                     thereis (search reject-word params)))
+    ;; possibly should error or something instead of just ignoring the args?
+    (setf params nil))
   (let ((formatted (uiop:run-program `(,*pygments-command*
                                        ,@ *pygments-args*
                                        ,@ (when lang
