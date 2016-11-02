@@ -12,8 +12,7 @@
            #:*code-blocks-default-colorize*
            #:*code-blocks-pre-class*
            #:*code-blocks-span-class*
-           #:*code-blocks-coloring-type-remap*
-           #:*pygments-disable-unsafe-options*))
+           #:*code-blocks-coloring-type-remap*))
 
 (in-package #:3bmd-code-blocks)
 
@@ -44,9 +43,6 @@
 ;;   future options
 (defparameter *pygments-reject-args* '("cssfile"))
 (defparameter *pygments-span-args* `("-P" "nowrap=True" ,@ *pygments-args*))
-;; pygments doesn't seem to do much sanitizing of output, so disable
-;; passing options to it by default
-(defparameter *pygments-disable-unsafe-options* t)
 
 (defparameter *render-code-spans* nil
   "Render in-line code spans.")
@@ -133,10 +129,9 @@
 ; Pygments
 ;-------------------------------------------------------------------------------
 (defmethod render-code-block ((renderer (eql :pygments)) stream lang params code)
-  (when (or *pygments-disable-unsafe-options*
-            (and params
-                 (loop for reject-word in *pygments-reject-args*
-                         thereis (search reject-word params))))
+  (when (and params
+             (loop for reject-word in *pygments-reject-args*
+                     thereis (search reject-word params)))
     ;; possibly should error or something instead of just ignoring the args?
     (setf params nil))
   (let ((formatted (uiop:run-program `(,*pygments-command*
@@ -266,60 +261,3 @@
   (with-output-to-string (s)
     (3bmd:parse-string-and-print-to-stream
      "a `(defun a() )` b" s)))
-
-#++
-(let ((3bmd-code-blocks:*code-blocks* t)
-      (3bmd-code-blocks:*renderer* :pygments))
-  (with-output-to-string (s)
-    (3bmd:parse-string-and-print-to-stream
-    "
-
-```c|title=;touch /tmp/hacked ,linenos=1
-main(){
-  exit(1);
-}
-```
-
-" s)))
-
-#++
-(let ((3bmd-code-blocks:*code-blocks* t)
-      (3bmd-code-blocks:*renderer* :pygments))
-  (with-output-to-string (s)
-    (3bmd:parse-string-and-print-to-stream
-    "
-
-```c|full,cssfile=/tmp/hacked,linenos=1
-main(){
-  exit(1);
-}
-```
-
-" s)))
-
-
-#++
-(let ((3bmd-code-blocks:*code-blocks* t)
-      (3bmd-code-blocks:*renderer* :pygments))
-  (with-output-to-string (s)
-    (3bmd:parse-string-and-print-to-stream
-    "
-
-```c|full,cssclass=foo\" onmouseover=alert('foo!') id=\"foo
-main(){}
-```
-
-" s)))
-
-#++
-(let ((3bmd-code-blocks:*code-blocks* t)
-      (3bmd-code-blocks:*renderer* :pygments))
-  (with-output-to-string (s)
-    (3bmd:parse-string-and-print-to-stream
-    "
-
-```c|full,cssclass=foo\">XSS goes here&gt;<script>alert('hax!')</script>&lt;<p
-main(){}
-```
-
-" s)))
