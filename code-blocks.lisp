@@ -27,6 +27,17 @@
 (defparameter *renderer* :colorize
   "Select rendering back-end. :colorize and :pygments are implemented by default.")
 
+;; uiop:run-program searches PATH on at least some implementations,
+;; may need to specify full path or pass :FORCE-SHELL T to
+;; uiop:run-program if it doesn't on others
+(defparameter *pygments-command* "pygmentize")
+;; run-program expects utf8, so probably need to fix that if changing
+;; encoding
+;; -l for lang and -O for parameters are currently hard coded as well
+(defparameter *pygments-args* '("-f" "html"
+                                "-P" "encoding=utf-8"))
+(defparameter *pygments-span-args* `("-P" "nowrap=True" ,@ *pygments-args*))
+
 (defparameter *render-code-spans* nil
   "Render in-line code spans.")
 
@@ -110,29 +121,23 @@
 ; Pygments
 ;-------------------------------------------------------------------------------
 (defmethod render-code-block ((renderer (eql :pygments)) stream lang params code)
-  (let ((formated (inferior-shell:run (format nil
-                                              "pygmentize -f html ~@[-l ~a~] ~@[-O ~a~]"
-                                              lang params)
-                                      :input (make-string-input-stream code)
-                                      :output :string)))
-    (format stream "~a" formated)))
+  (let ((formatted (uiop:run-program `(,*pygments-command*
+                                       ,@ *pygments-args*
+                                       ,@ (when lang
+                                            `("-l" ,lang))
+                                       ,@ (when params
+                                            `("-O" ,params)))
+                                     :external-format :utf-8
+                                     :input (make-string-input-stream code)
+                                     :output :string)))
+    (format stream "~a" formatted)))
 
 (defmethod render-code ((renderer (eql :pygments)) stream code)
-  (let ((s (make-string-output-stream)))
+  (let ((s (make-string-output-stream))
+        (*pygments-args* *pygments-span-args*))
     (render-code-block renderer s *render-code-spans-lang* nil code)
-    (format stream "~a"
-            (reduce #'funcall
-                    (list
-                     (lambda (text) (cl-ppcre:regex-replace-all
-                                     "<div class=\"highlight\"><pre>"
-                                     text
-                                     "<span class=\"highlight\"><code>"))
-                     (lambda (text) (cl-ppcre:regex-replace-all
-                                     "</pre></div>"
-                                     text
-                                     "</code></span>"))
-                     (get-output-stream-string s))
-                    :from-end t))))
+    (format stream "<span class=\"highlight\"><code>~a</code></span>"
+            (get-output-stream-string s))))
 
 ;-------------------------------------------------------------------------------
 ; Parsing
