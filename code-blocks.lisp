@@ -84,6 +84,8 @@
                                  "cl" :common-lisp
                                  "commonlisp" :common-lisp
                                  "clisp" :common-lisp
+                                 "clj" :clojure
+                                 "clojure" :clojure
                                  "c" :c
                                  "c++" :c++
                                  "java" :java
