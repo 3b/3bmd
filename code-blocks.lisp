@@ -2,9 +2,12 @@
 ; Package and generics
 ;-------------------------------------------------------------------------------
 (defpackage #:3bmd-code-blocks
-  (:use #:cl #:esrap #:3bmd-ext)
+  (:use #:cl #:esrap #:3bmd-ext #:uiop #:split-sequence)
   (:export #:render-code
            #:render-code-block
+           #:start-renderer
+           #:stop-renderer
+           #:renderer-started-p
            #:*code-blocks*
            #:*renderer*
            #:*render-code-spans*
@@ -24,31 +27,46 @@
 (defgeneric render-code (renderer stream code)
   (:documentation "Render CODE written in LANG to STREAM"))
 
+(defvar *renderer-started* nil
+  "State of the renderer")
+
+(defgeneric start-concrete-renderer (renderer)
+  (:documentation "Start the code renderer")
+  (:method (renderer) nil))
+
+(defgeneric stop-concrete-renderer (renderer)
+  (:documentation "Stop the code renderer")
+  (:method (renderer) nil))
+
+(defun start-renderer ()
+  (start-concrete-renderer *renderer*)
+  (setf *renderer-started* t))
+
+(defun stop-renderer ()
+  (stop-concrete-renderer *renderer*)
+  (setf *renderer-started* nil))
+
+(defun renderer-started-p ()
+  (eq *renderer-started* t))
+
 (defparameter *renderer* :colorize
   "Select rendering back-end. :colorize and :pygments are implemented by default.")
 
 ;; uiop:run-program searches PATH on at least some implementations,
 ;; may need to specify full path or pass :FORCE-SHELL T to
-;; uiop:run-program if it doesn't on others
-(defparameter *pygments-command* "pygmentize")
-;; run-program expects utf8, so probably need to fix that if changing
-;; encoding
-;; -l for lang and -O for parameters are currently hard coded as well
-(defparameter *pygments-args* '("-f" "html"
-                                "-P" "encoding=utf-8"
-                                "-P" "noclobber_cssfile=True"))
-;; cssfile allows creating arbitrary files, so try to reject it
-;; todo: add an option to parse params and whitelist options instead
-;;   rejecting on substring match has false positives, and risks missing
-;;   future options
-(defparameter *pygments-reject-args* '("cssfile"))
-(defparameter *pygments-span-args* `("-P" "nowrap=True" ,@ *pygments-args*))
+;; uiop:launch-program if it doesn't on others
+(defparameter *python-command* "python3")
 
 (defparameter *render-code-spans* nil
   "Render in-line code spans.")
 
 (defparameter *render-code-spans-lang* nil
   "Default language used in in-line code spans.")
+
+(defvar *pygmentize-path*
+  (merge-pathnames "pygmentize.py"
+                   #.(or *compile-file-truename* *load-truename*))
+  "Path to the pygmentize script")
 
 ;-------------------------------------------------------------------------------
 ; Colorize
@@ -128,29 +146,50 @@
 ;-------------------------------------------------------------------------------
 ; Pygments
 ;-------------------------------------------------------------------------------
+(defvar *pygmentize-process* nil)
+
+(defmethod start-concrete-renderer ((renderer (eql :pygments)))
+  (setf *pygmentize-process* (uiop:launch-program
+                              (list *python-command*
+                                    (namestring *pygmentize-path*))
+                              :input :stream
+                              :output :stream)))
+
+(defmethod stop-concrete-renderer ((renderer (eql :pygments)))
+  (write-line "exit" (process-info-input *pygmentize-process*))
+  (force-output  (process-info-input *pygmentize-process*))
+  (wait-process *pygmentize-process*))
+
+(defun pygmentize-code (lang params code)
+  (let ((proc-input (process-info-input *pygmentize-process*))
+        (proc-output (process-info-output *pygmentize-process*)))
+    (write-line (format nil "pygmentize|~a|~a~@[|~a~]"
+                        (length code) lang params)
+                proc-input)
+    (write-string code proc-input)
+    (force-output proc-input)
+    (let ((nchars (parse-integer
+                   (nth 1
+                        (split-sequence #\| (read-line proc-output))))))
+      (coerce (loop repeat nchars
+                 for x = (read-char proc-output)
+                 collect x)
+              'string))))
+
 (defmethod render-code-block ((renderer (eql :pygments)) stream lang params code)
-  (when (and params
-             (loop for reject-word in *pygments-reject-args*
-                     thereis (search reject-word params)))
-    ;; possibly should error or something instead of just ignoring the args?
-    (setf params nil))
-  (let ((formatted (uiop:run-program `(,*pygments-command*
-                                       ,@ *pygments-args*
-                                       ,@ (when lang
-                                            `("-l" ,lang))
-                                       ,@ (when params
-                                            `("-O" ,params)))
-                                     :external-format :utf-8
-                                     :input (make-string-input-stream code)
-                                     :output :string)))
-    (format stream "~a" formatted)))
+  (let ((started-before (renderer-started-p)))
+    (if (not started-before)
+        (start-renderer))
+    (format stream "~a" (pygmentize-code lang params code))
+    (if (not started-before)
+        (stop-renderer))))
 
 (defmethod render-code ((renderer (eql :pygments)) stream code)
-  (let ((s (make-string-output-stream))
-        (*pygments-args* *pygments-span-args*))
-    (render-code-block renderer s *render-code-spans-lang* nil code)
+  (let ((s (make-string-output-stream)))
+    (render-code-block renderer s *render-code-spans-lang* "nowrap" code)
     (format stream "<span class=\"highlight\"><code>~a</code></span>"
-            (get-output-stream-string s))))
+            (string-right-trim '(#\Newline)
+                               (get-output-stream-string s)))))
 
 ;-------------------------------------------------------------------------------
 ; Parsing
