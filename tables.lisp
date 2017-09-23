@@ -118,15 +118,19 @@
 #+should-test (progn
 
 (use-package :should-test)
-
+(shadowing-import '(3bmd-grammar::th 3bmd-grammar::td
+                    3bmd-grammar::left 3bmd-grammar::center
+                    3bmd-grammar::right))
 (deftest parse-table ()
   (should be equal '((table
-                      ((th (:plain "First" " " "Header") nil)
-                       (th (:plain "Second" " " "Header") nil))
-                      ((td (:plain "Content" " " "Cell") nil)
-                       (td (:plain "Content" " " "Cell") nil))
-                      ((td (:plain "Content" " " "Cell") nil)
-                       (td (:plain "Content" " " "Cell") nil))))
+                      :head
+                      (((th (:plain "First" " " "Header") nil)
+                        (th (:plain "Second" " " "Header") nil)))
+                      :body
+                      (((td (:plain "Content" " " "Cell") nil)
+                        (td (:plain "Content" " " "Cell") nil))
+                       ((td (:plain "Content" " " "Cell") nil)
+                        (td (:plain "Content" " " "Cell") nil)))))
           (parse-doc "
 | First Header  | Second Header |
 | ------------- | ------------- |
@@ -134,30 +138,34 @@
 | Content Cell  | Content Cell  |
 "))
   (should be equal '((table
-                      ((th (:plain "Name") nil)
-                       (th (:plain "Description") nil))
-                      ((td (:plain "Help") nil)
-                       (td (:plain "Display" " " "the" " " "help" " " "window.") nil))
-                      ((td (:plain "Close") nil)
-                       (td (:plain "Closes" " " "a" " " "window") nil))))
+                      :head
+                      (((th (:plain "Name") nil)
+                        (th (:plain "Description") nil)))
+                      :body
+                      (((td (:plain "Help") nil)
+                        (td (:plain "Display" " " "the" " " "help" " " "window.") nil))
+                       ((td (:plain "Close") nil)
+                        (td (:plain "Closes" " " "a" " " "window") nil)))))
           (parse-doc "
 | Name | Description          |
 | ------------- | ----------- |
 | Help      | Display the help window.|
 | Close     | Closes a window     |
 "))  (should be equal '((table
-                         ((th (:plain "Left-Aligned") left)
-                          (th (:plain "Center" " " "Aligned") center)
-                          (th (:plain "Right" " " "Aligned") right))
-                         ((td (:plain "col" " " (:code "3") " " "is") left)
-                          (td (:plain "some" " " "wordy" " " "text") center)
-                          (td (:plain "$1600") right))
-                         ((td (:plain "col" " " "2" " " "is") left)
-                          (td (:plain "centered") center)
-                          (td (:plain "$12") right))
-                         ((td (:plain "zebra" " " "stripes") left)
-                          (td (:plain "are" " " "neat") center)
-                          (td (:plain "$1") right))))
+                         :head
+                         (((th (:plain "Left-Aligned") left)
+                           (th (:plain "Center" " " "Aligned") center)
+                           (th (:plain "Right" " " "Aligned") right)))
+                         :body
+                         (((td (:plain "col" " " (:code "3") " " "is") left)
+                           (td (:plain "some" " " "wordy" " " "text") center)
+                           (td (:plain "$1600") right))
+                          ((td (:plain "col" " " "2" " " "is") left)
+                           (td (:plain "centered") center)
+                           (td (:plain "$12") right))
+                          ((td (:plain "zebra" " " "stripes") left)
+                           (td (:plain "are" " " "neat") center)
+                           (td (:plain "$1") right)))))
           (parse-doc "
 | Left-Aligned  | Center Aligned  | Right Aligned |
 | :------------ |:---------------:| -----:|
@@ -167,20 +175,46 @@
 "))
 
  (should be equal '((TABLE
-                     ((TH (:PLAIN "a") NIL)
-                      (TH (:PLAIN "b") NIL))
-                     ((TD (:PLAIN "1" " " "a" " " "b" (:CODE "|")) NIL)
-                      (TD (:PLAIN "2") NIL))
-                     ((TD (:PLAIN "3" " " "|") NIL)
-                      (TD (:PLAIN "4") NIL))
-                     ((TD (:PLAIN ">" " " "5") NIL)
-                      (TD (:PLAIN "#" "#" "#" " " "6") NIL))))
+                     :head
+                     (((TH (:PLAIN "a") NIL)
+                       (TH (:PLAIN "b") NIL)))
+                     :body
+                     (((TD (:PLAIN "1" " " "a" " " "b" (:CODE "|")) NIL)
+                       (TD (:PLAIN "2") NIL))
+                      ((TD (:PLAIN "3" " " "|") NIL)
+                       (TD (:PLAIN "4") NIL))
+                      ((TD (:PLAIN ">" " " "5") NIL)
+                       (TD (:PLAIN "#" "#" "#" " " "6") NIL)))))
          (parse-doc "
 | a | b |  
 |---|---|   
 |    1 a b`|`| 2 |  
 | 3 \\|| 4 |    
 | > 5 | ### 6 |
+"))
+ (should be equal '((TABLE
+                     :HEAD
+                     (((3BMD-GRAMMAR::TH (:PLAIN "a") NIL)
+                       (3BMD-GRAMMAR::TH (:PLAIN) NIL)))
+                     :BODY
+                     (((3BMD-GRAMMAR::TD (:PLAIN) NIL)
+                       (3BMD-GRAMMAR::TD (:PLAIN "b") NIL)))))
+         (parse-doc "
+| a |   |  
+| - | - |   
+|   | b |
+"))
+ (should be equal '((TABLE
+                     :HEAD
+                     (((3BMD-GRAMMAR::TH (:PLAIN "|") NIL)
+                       (3BMD-GRAMMAR::TH (:PLAIN) NIL)))
+                     :BODY
+                     (((3BMD-GRAMMAR::TD (:PLAIN) NIL)
+                       (3BMD-GRAMMAR::TD (:PLAIN ".") NIL)))))
+         (parse-doc "
+|\\|||  
+| - | - |   
+||.|
 "))
 )
 )
