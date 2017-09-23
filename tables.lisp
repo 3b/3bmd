@@ -75,7 +75,9 @@
                             (mapcar (lambda (content align)
                                       (list 'td content align))
                                     row aligns))
-                          rows)))))
+                          rows))))
+  (:escape-char-rule table-escaped-characters #\|)
+  (:character-rule table-extended-characters #\|))
 
 (in-package #:3bmd)
 
