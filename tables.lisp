@@ -34,7 +34,7 @@
 
 (defrule table-cell (and #\|
                          sp
-                         (+ (and (! (or (and sp #\|) endline)) inline))
+                         (* (and (! (or (and sp #\|) endline)) inline))
                          sp
                          (& #\|))
   (:destructure (_ __ content &rest ___)
