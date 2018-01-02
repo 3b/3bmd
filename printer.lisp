@@ -57,12 +57,32 @@
     (with-output-to-string (s)
       (print-pre-escaped string s))))
 
+(defvar *url-fragment-chars* "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890@$&'()*+.,;:?!=-_/")
+
+(defun title-text (html)
+  (with-output-to-string (out)
+    (loop with state = :text
+          for c across html
+          do (case state
+               (:text
+                (cond ((eql c #\<)
+                       (setf state :tag))
+                      ((eql c #\ )
+                       (write-char #\_ out))
+                      ((find c *url-fragment-chars*)
+                       (write-char (char-downcase c) out))))
+               (:tag
+                (when (eql c #\>)
+                  (setf state :text)))))))
+
 ;; todo: minimize extra newlines...
 (defmethod print-tagged-element ((tag (eql :heading)) stream rest)
-  (padded (2 stream)
-    (format stream "<h~d>" (getf rest :level))
-    (mapcar (lambda (a) (print-element a stream)) (getf rest :contents))
-    (format stream "</h~d>" (getf rest :level))))
+  (let ((contents (with-output-to-string (stream)
+                    (mapcar (lambda (a) (print-element a stream)) (getf rest :contents)))))
+    (padded (2 stream)
+      (format stream "<h~d id=~s>" (getf rest :level) (title-text contents))
+      (write-string contents stream)
+      (format stream "</h~d>" (getf rest :level)))))
 
 (defmethod print-tagged-element ((tag (eql :paragraph)) stream rest)
   (padded (2 stream)
