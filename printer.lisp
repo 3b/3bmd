@@ -57,7 +57,7 @@
     (with-output-to-string (s)
       (print-pre-escaped string s))))
 
-(defvar *url-fragment-chars* "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890@$&'()*+.,;:?!=-_/"
+(defvar *allowed-id-chars* "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890@$&'()*+.,;:?!=-_/"
   "A string of characters that are allowed to appear within an element ID string.")
 
 (defun html-content-id (html)
@@ -70,7 +70,7 @@
                        (setf state :tag))
                       ((eql c #\ )
                        (write-char #\_ out))
-                      ((find c *url-fragment-chars*)
+                      ((find c *allowed-id-chars*)
                        (write-char (char-downcase c) out))))
                (:tag
                 (when (eql c #\>)
