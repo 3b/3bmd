@@ -61,10 +61,6 @@
   "A string of characters that are allowed to appear within an element ID string.")
 
 (defun html-content-id (html)
-  "Computes an applicable element ID from the given HTML string.
-
-If no ID should be used to identify the given content, NIL can be
-returned instead."
   (with-output-to-string (out)
     (loop with state = :text
           for c across html
@@ -81,7 +77,7 @@ returned instead."
                   (setf state :text)))))))
 
 (defvar *generate-header-ids* NIL
-  "Whether ID strings should be generated for header elements.")
+  "Whether ID attributes should be generated for header elements.")
 
 ;; todo: minimize extra newlines...
 (defmethod print-tagged-element ((tag (eql :heading)) stream rest)
