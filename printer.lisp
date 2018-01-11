@@ -57,9 +57,14 @@
     (with-output-to-string (s)
       (print-pre-escaped string s))))
 
-(defvar *url-fragment-chars* "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890@$&'()*+.,;:?!=-_/")
+(defvar *url-fragment-chars* "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890@$&'()*+.,;:?!=-_/"
+  "A string of characters that are allowed to appear within an element ID string.")
 
-(defun title-text (html)
+(defun html-content-id (html)
+  "Computes an applicable element ID from the given HTML string.
+
+If no ID should be used to identify the given content, NIL can be
+returned instead."
   (with-output-to-string (out)
     (loop with state = :text
           for c across html
@@ -75,12 +80,16 @@
                 (when (eql c #\>)
                   (setf state :text)))))))
 
+(defvar *generate-header-ids* NIL
+  "Whether ID strings should be generated for header elements.")
+
 ;; todo: minimize extra newlines...
 (defmethod print-tagged-element ((tag (eql :heading)) stream rest)
-  (let ((contents (with-output-to-string (stream)
-                    (mapcar (lambda (a) (print-element a stream)) (getf rest :contents)))))
+  (let* ((contents (with-output-to-string (stream)
+                     (mapcar (lambda (a) (print-element a stream)) (getf rest :contents))))
+         (id (when *generate-header-ids* (html-content-id contents))))
     (padded (2 stream)
-      (format stream "<h~d id=~s>" (getf rest :level) (title-text contents))
+      (format stream "<h~d~@[ id=~s~]>" (getf rest :level) id)
       (write-string contents stream)
       (format stream "</h~d>" (getf rest :level)))))
 
