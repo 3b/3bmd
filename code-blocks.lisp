@@ -2,7 +2,7 @@
 ; Package and generics
 ;-------------------------------------------------------------------------------
 (defpackage #:3bmd-code-blocks
-  (:use #:cl #:esrap #:3bmd-ext #:uiop #:split-sequence)
+  (:use #:cl #:esrap #:3bmd-ext #:split-sequence)
   (:export #:render-code
            #:render-code-block
            #:start-renderer
@@ -156,13 +156,13 @@
                               :output :stream)))
 
 (defmethod stop-concrete-renderer ((renderer (eql :pygments)))
-  (write-line "exit" (process-info-input *pygmentize-process*))
-  (force-output  (process-info-input *pygmentize-process*))
-  (wait-process *pygmentize-process*))
+  (write-line "exit" (uiop:process-info-input *pygmentize-process*))
+  (force-output  (uiop:process-info-input *pygmentize-process*))
+  (uiop:wait-process *pygmentize-process*))
 
 (defun pygmentize-code (lang params code)
-  (let ((proc-input (process-info-input *pygmentize-process*))
-        (proc-output (process-info-output *pygmentize-process*)))
+  (let ((proc-input (uiop:process-info-input *pygmentize-process*))
+        (proc-output (uiop:process-info-output *pygmentize-process*)))
     (write-line (format nil "pygmentize|~a|~a~@[|~a~]"
                         (length code) lang params)
                 proc-input)
