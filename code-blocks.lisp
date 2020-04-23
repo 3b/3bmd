@@ -150,7 +150,8 @@
         (*pygments-args* *pygments-span-args*))
     (render-code-block renderer s *render-code-spans-lang* nil code)
     (format stream "<span class=\"highlight\"><code>~a</code></span>"
-            (get-output-stream-string s))))
+            (string-right-trim '(#\Newline)
+                               (get-output-stream-string s)))))
 
 ;-------------------------------------------------------------------------------
 ; Parsing
