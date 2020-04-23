@@ -299,6 +299,7 @@
 
 
 (defrule html-block (and (or html-block-in-tags html-comment
+                             html-processing-instruction
                              html-block-self-closing
                              html-block-non-closing)
                          (+ blank-line))
@@ -603,10 +604,12 @@
     (list :code a)))
 
 
-(defrule raw-html (or html-comment html-tag)
+(defrule raw-html (or html-comment html-processing-instruction html-tag)
   (:lambda (a)
     (list :raw-html a)))
 (defrule html-comment (and "<!--" (* (and (! "-->") character)) "-->")
+  (:text t))
+(defrule html-processing-instruction (and "<?" (* (and (! "?>") character)) "?>")
   (:text t))
 (defrule html-tag (and #\< spnl (? #\/) (+ (or alphanumeric-ascii #\:))
                        spnl (* html-attribute)
