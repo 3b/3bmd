@@ -32,7 +32,8 @@
            #:parse-and-print-to-stream
            #:print-doc-to-stream
            #:*smart-quotes*
-           ))
+           #:*allowed-id-chars*
+           #:*generate-header-ids*))
 
 
 

@@ -57,12 +57,37 @@
     (with-output-to-string (s)
       (print-pre-escaped string s))))
 
+(defvar *allowed-id-chars* "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890@$&'()*+.,;:?!=-_/"
+  "A string of characters that are allowed to appear within an element ID string.")
+
+(defun html-content-id (html)
+  (with-output-to-string (out)
+    (loop with state = :text
+          for c across html
+          do (case state
+               (:text
+                (cond ((eql c #\<)
+                       (setf state :tag))
+                      ((eql c #\ )
+                       (write-char #\_ out))
+                      ((find c *allowed-id-chars*)
+                       (write-char (char-downcase c) out))))
+               (:tag
+                (when (eql c #\>)
+                  (setf state :text)))))))
+
+(defvar *generate-header-ids* NIL
+  "Whether ID attributes should be generated for header elements.")
+
 ;; todo: minimize extra newlines...
 (defmethod print-tagged-element ((tag (eql :heading)) stream rest)
-  (padded (2 stream)
-    (format stream "<h~d>" (getf rest :level))
-    (mapcar (lambda (a) (print-element a stream)) (getf rest :contents))
-    (format stream "</h~d>" (getf rest :level))))
+  (let* ((contents (with-output-to-string (stream)
+                     (mapcar (lambda (a) (print-element a stream)) (getf rest :contents))))
+         (id (when *generate-header-ids* (html-content-id contents))))
+    (padded (2 stream)
+      (format stream "<h~d~@[ id=~s~]>" (getf rest :level) id)
+      (write-string contents stream)
+      (format stream "</h~d>" (getf rest :level)))))
 
 (defmethod print-tagged-element ((tag (eql :paragraph)) stream rest)
   (padded (2 stream)
