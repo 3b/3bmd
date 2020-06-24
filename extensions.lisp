@@ -30,6 +30,8 @@
                          return 0
                          minimize (or (position i list) len))
                       len)))
+        (setf min (or min 0)
+              max (or max 0))
         (when (< max min)
           (error "can't add rule to expression, conflicting before=~s(~s) after=~s(\
 ~s)" before max after min))
