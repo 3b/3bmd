@@ -10,6 +10,7 @@
            #:renderer-started-p
            #:*code-blocks*
            #:*renderer*
+           #:*chroma-style*
            #:*render-code-spans*
            #:*render-code-spans-lang*
            #:*code-blocks-default-colorize*
@@ -29,6 +30,9 @@
 
 (defvar *renderer-started* nil
   "State of the renderer")
+
+(defvar *chroma-style* "dracula"
+  "Style to use for Chroma syntax. Run `chroma --list` to view available styles.")
 
 (defgeneric start-concrete-renderer (renderer)
   (:documentation "Start the code renderer")
@@ -50,7 +54,7 @@
   (eq *renderer-started* t))
 
 (defparameter *renderer* :colorize
-  "Select rendering back-end. :colorize and :pygments are implemented by default.")
+  "Select rendering back-end. :colorize, :pygments, and :chroma are implemented by default.")
 
 ;; uiop:run-program searches PATH on at least some implementations,
 ;; may need to specify full path or pass :FORCE-SHELL T to
@@ -142,6 +146,31 @@
           (let ((colorize::*css-background-class* (or *code-blocks-span-class*
                                                       "code")))
             (colorize::html-colorization *render-code-spans-lang* code))))
+
+;-------------------------------------------------------------------------------
+; Chroma
+;-------------------------------------------------------------------------------
+(defmethod render-code-block ((renderer (eql :chroma)) stream lang params code)
+    (format stream "~a" (chroma-code lang code)))
+
+(defun chroma-code (lang code)
+  (let ((lexer "--lexer=autodetect")
+        (proc nil)
+        (style (format nil "--style=~a" *chroma-style*)))
+
+    (unless (equal lang "")
+      (setf lexer (format nil "--lexer=~a" lang)))
+
+    (setf proc (with-input-from-string (s code)
+                 (uiop:launch-program
+                  (list "chroma" "--html" "--html-inline-styles" "--html-only" style lexer)
+                  :input s
+                  :output :stream)))
+
+    (with-output-to-string (str)
+      (loop for line = (read-line (uiop:process-info-output proc) nil)
+            while line
+            do (write-line line str)))))
 
 ;-------------------------------------------------------------------------------
 ; Pygments

@@ -58,6 +58,8 @@ todo:
     Some attempt has been made to avoid interpretation of the options by the shell when calling `pygmentize`, but you should probably audit the code and test the interaction with the implementation of `uiop:run-program` on your implementation of choice before using it on untrusted input. Pygments html formatter creates arbitrary files when passed `-Ofull,cssfile=filename`, so parameters with the substring `cssfile` are ignored (`noclobber_cssfile=True` is also set by default, but that only prevents overwriting, not creation). Users with untrusted input may want to audit that as well to make sure there are no other dangerous options or ways to get around the exact substring check.
 
 
+    Can optionally use [`Chroma`](https://github.com/alecthomas/chroma) instead of `colorize` or `Pygments` by setting `3bmd-code-blocks:*renderer*` to  `:chroma`. Change the embedded theme of the `:chroma` code block via `3bmd-code-blocks:*chroma-style*`. The various styles for Chroma can be viewed via `chroma --list`.
+
 * Loading `3bmd-ext-definition-lists.asd` adds support for parsing PHP Markdown Extra style definition lists
      If `3bmd-definition-lists:*definition-lists*` is non-`NIL` while parsing, the following definition list will be recognized (see <http://michelf.ca/projects/php-markdown/extra/#def-list>):
 
