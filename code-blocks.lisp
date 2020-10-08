@@ -148,6 +148,20 @@
             (colorize::html-colorization *render-code-spans-lang* code))))
 
 ;-------------------------------------------------------------------------------
+; no highlighting. the parsed 'lang' is included as class attribute to pre tag.
+;-------------------------------------------------------------------------------
+(defmethod render-code-block ((renderer (eql :nohighlight)) stream lang params code)
+  (declare (ignore params))
+  (let ((escaped (3bmd::escape-pre-string code)))
+    (3bmd::padded (2 stream)
+      (format stream "<pre~@[ class=\"~a\"~]><code>" lang)
+      (format stream "~a" escaped)
+      (format stream "</code></pre>"))))
+
+(defmethod render-code ((renderer (eql :nohighlight)) stream code)
+  (format stream "<code>~a</code>" code))
+
+;-------------------------------------------------------------------------------
 ; Chroma
 ;-------------------------------------------------------------------------------
 (defmethod render-code-block ((renderer (eql :chroma)) stream lang params code)
