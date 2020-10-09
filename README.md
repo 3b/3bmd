@@ -73,6 +73,13 @@ todo:
     ```
     <pre class="lisp"><code>...</code></pre>
     ```
+    
+    To change the format used for rendering the `class` attribute value you can set a different format to `*code-blocks-pre-class-format*` which defaults to `~a` in order to render the language as parsed from the tripple ticks block. I.e.: setting the format `(setf 3bmd-code-blocks:*code-blocks-pre-class-format* "brush: ~a;")` will render:
+    
+    ```
+    <pre class="brush: lisp;"><code>...</code></pre>    
+    ```
+    
 
 * Loading `3bmd-ext-definition-lists.asd` adds support for parsing PHP Markdown Extra style definition lists
      If `3bmd-definition-lists:*definition-lists*` is non-`NIL` while parsing, the following definition list will be recognized (see <http://michelf.ca/projects/php-markdown/extra/#def-list>):

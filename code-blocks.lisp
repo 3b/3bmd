@@ -15,6 +15,7 @@
            #:*render-code-spans-lang*
            #:*code-blocks-default-colorize*
            #:*code-blocks-pre-class*
+           #:*code-blocks-pre-class-format*
            #:*code-blocks-span-class*
            #:*code-blocks-coloring-type-remap*))
 
@@ -147,16 +148,22 @@
                                                       "code")))
             (colorize::html-colorization *render-code-spans-lang* code))))
 
-;-------------------------------------------------------------------------------
-; no highlighting. the parsed 'lang' is included as class attribute to pre tag.
-;-------------------------------------------------------------------------------
+;;-------------------------------------------------------------------------------
+;; no highlighting. the parsed 'lang' is included as class attribute to pre tag.
+;;-------------------------------------------------------------------------------
+(defparameter *code-blocks-pre-class-format* "~a"
+  "Define the format used in `<pre class=\"format\"/>'. Must have `~a' for the `lang' parameter.")
+
 (defmethod render-code-block ((renderer (eql :nohighlight)) stream lang params code)
   (declare (ignore params))
   (let ((escaped (3bmd::escape-pre-string code)))
     (3bmd::padded (2 stream)
-      (format stream "<pre~@[ class=\"~a\"~]><code>" lang)
-      (format stream "~a" escaped)
-      (format stream "</code></pre>"))))
+                  (if lang
+                      (format stream "<pre class=\"~a\"><code>"
+                              (format nil *code-blocks-pre-class-format* lang))
+                      (format stream "<pre><code>"))
+                  (format stream "~a" escaped)
+                  (format stream "</code></pre>"))))
 
 (defmethod render-code ((renderer (eql :nohighlight)) stream code)
   (format stream "<code>~a</code>" code))
