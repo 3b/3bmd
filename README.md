@@ -60,6 +60,27 @@ todo:
 
     Can optionally use [`Chroma`](https://github.com/alecthomas/chroma) instead of `colorize` or `Pygments` by setting `3bmd-code-blocks:*renderer*` to  `:chroma`. Change the embedded theme of the `:chroma` code block via `3bmd-code-blocks:*chroma-style*`. The various styles for Chroma can be viewed via `chroma --list`.
 
+    If no highlighting is desired, in case of using a JavaScript highlighter, it is possible to specify `:nohighlight` as `3bmd-code-blocks:*renderer*`.
+    In this case the `pre` tags `class` attribute is rendered with the defined language. So:
+    
+    ```
+    ```lisp
+    (defun foo ())
+    ```
+    
+    Is rendered as: 
+    
+    ```
+    <pre class="lisp"><code>...</code></pre>
+    ```
+    
+    To change the format used for rendering the `class` attribute value you can set a different format to `*code-blocks-pre-class-format*` which defaults to `~a` in order to render the language as parsed from the tripple ticks block. I.e.: setting the format `(setf 3bmd-code-blocks:*code-blocks-pre-class-format* "brush: ~a;")` will render:
+    
+    ```
+    <pre class="brush: lisp;"><code>...</code></pre>    
+    ```
+    
+
 * Loading `3bmd-ext-definition-lists.asd` adds support for parsing PHP Markdown Extra style definition lists
      If `3bmd-definition-lists:*definition-lists*` is non-`NIL` while parsing, the following definition list will be recognized (see <http://michelf.ca/projects/php-markdown/extra/#def-list>):
 
