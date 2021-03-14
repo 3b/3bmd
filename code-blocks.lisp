@@ -11,6 +11,7 @@
            #:*code-blocks*
            #:*renderer*
            #:*chroma-style*
+           #:*python-command*
            #:*render-code-spans*
            #:*render-code-spans-lang*
            #:*code-blocks-default-colorize*
