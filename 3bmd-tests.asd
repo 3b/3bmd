@@ -4,7 +4,8 @@
   :serial t
   :components ((:module "tests"
                 :components ((:file "package")
-                             (:file "grammar"))))
+                             (:module "grammar"
+                              :components ((:file "bullet-list"))))))
   :perform (test-op (op c)
                     (declare (ignore op c))
                     (symbol-call "FIASCO" "RUN-PACKAGE-TESTS"
