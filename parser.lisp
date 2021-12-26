@@ -223,12 +223,15 @@
                      (or #\+ #\* #\-)
                      (+ space-char))
   (:constant :bullet-list))
+
 (defrule bullet-list (and (& bullet) (or list-tight list-loose))
   (:destructure (a b)
+                (declare (ignore a))
                 (cons :bullet-list b)))
 
 (defrule enumerator (and nonindent-space (+ dec-digit) #\. (+ space-char))
   (:constant :counted-list))
+
 (defrule ordered-list (and (& enumerator) (or list-tight list-loose))
   (:destructure (a b)
                 (cons :counted-list b)))
@@ -243,6 +246,7 @@
 
 (defrule list-item-tight (and (or bullet enumerator)
                               list-block
+                              ;; (* list-continuation-block)
                               (* (and (! blank-line)
                                       list-continuation-block))
                               (! list-continuation-block))

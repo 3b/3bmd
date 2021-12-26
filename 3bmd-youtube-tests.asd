@@ -4,4 +4,8 @@
   :depends-on (#:3bmd-youtube
                #:fiasco)
   :serial t
-  :components ((:file "youtube-tests")))
+  :components ((:file "youtube-tests"))
+  :perform (test-op (op c)
+                    (declare (ignore op c))
+                    (symbol-call "FIASCO" "RUN-PACKAGE-TESTS"
+                                 :package '#:3bmd-youtube-tests)))

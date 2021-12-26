@@ -5,7 +5,4 @@
   :depends-on (3bmd esrap)
   :serial t
   :components ((:file "youtube"))
-  :in-order-to ((test-op (load-op 3bmd-youtube-tests)))
-  :perform (test-op :after (op c)
-                    (declare (ignore op c))
-                    (uiop:symbol-call :fiasco 'run-package-tests :package :3bmd-youtube-tests)))
+  :in-order-to ((test-op (test-op 3bmd-youtube-tests))))
