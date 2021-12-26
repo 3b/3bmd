@@ -5,11 +5,11 @@
   (let ((expected '((:BULLET-LIST
                      (:LIST-ITEM (:PLAIN "Foo"))
                      (:LIST-ITEM (:PLAIN "Bar"))))))
-    (multiple-value-bind (production remaining-text parse-succeeded)
+    (multiple-value-bind (result remaining-text parse-succeeded)
         (3bmd-grammar:parse-doc ' "* Foo
 * Bar
 ")
-      (is (equalp production expected))
+      (is (equalp result expected))
       (is (not remaining-text))
       (is parse-succeeded))))
 
@@ -18,12 +18,12 @@
   (let ((expected '((:BULLET-LIST
                      (:LIST-ITEM (:PARAGRAPH "Foo"))
                      (:LIST-ITEM (:PARAGRAPH "Bar"))))))
-    (multiple-value-bind (production remaining-text parse-succeeded)
+    (multiple-value-bind (result remaining-text parse-succeeded)
         (3bmd-grammar:parse-doc "* Foo
 
 * Bar
 ")
-      (is (equalp production expected))
+      (is (equalp result expected))
       (is (not remaining-text))
       (is parse-succeeded))))
 
@@ -34,21 +34,28 @@
                       (:PARAGRAPH "Foo")
                       (:PARAGRAPH "Second" "line"))
                      (:LIST-ITEM (:PARAGRAPH "Bar"))))))
-    (multiple-value-bind (production remaining-text parse-succeeded)
+    (multiple-value-bind (result remaining-text parse-succeeded)
         (3bmd-grammar:parse-doc "* Foo
 
     Second line
 
 * Bar
 ")
-      (is (equalp production expected))
+      (is (equalp result expected))
       (is (not remaining-text))
       (is parse-succeeded))))
 
 
 (deftest parse-list-with-embedded-code ()
-  (multiple-value-bind (production remaining-text parse-succeeded)
-      (3bmd-grammar:parse-doc "* Foo
+  (let ((expected '((:BULLET-LIST
+                     (:LIST-ITEM
+                      (:PARAGRAPH "Foo")
+                      (:PARAGRAPH (:CODE "
+      This is a code
+    ")))
+                     (:LIST-ITEM (:PLAIN "Bar"))))))
+    (multiple-value-bind (result remaining-text parse-succeeded)
+        (3bmd-grammar:parse-doc "* Foo
 
   ```
   This is a code
@@ -56,13 +63,6 @@
 
 * Bar
 ")
-    (is (equalp production '((:BULLET-LIST
-                              (:LIST-ITEM
-                               (:PARAGRAPH "Foo")
-                               (:PARAGRAPH (:CODE "
-      This is a code
-    ")))
-                              (:LIST-ITEM (:PLAIN "Bar"))))))
-    (is (not remaining-text))
-    (is parse-succeeded))
-  )
+      (is (equalp result expected))
+      (is (not remaining-text))
+      (is parse-succeeded))))
