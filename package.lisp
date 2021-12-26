@@ -27,8 +27,7 @@
 
 (defpackage #:3bmd
   (:use :cl :3bmd-grammar #:3bmd-ext)
-  (:export #:parse-string
-           #:parse-string-and-print-to-stream
+  (:export #:parse-string-and-print-to-stream
            #:parse-and-print-to-stream
            #:print-doc-to-stream
            #:*smart-quotes*

@@ -10,4 +10,5 @@
                (:file "smart-quotes")
                (:file "printer")
                (:file "markdown-printer")
-               (:file "plain-printer")))
+               (:file "plain-printer"))
+  :in-order-to ((test-op (test-op 3bmd-tests))))
