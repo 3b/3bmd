@@ -5,7 +5,8 @@
   :components ((:module "tests"
                 :components ((:file "package")
                              (:module "grammar"
-                              :components ((:file "bullet-list"))))))
+                              :components ((:file "bullet-list")
+                                           (:file "spaces-and-newlines"))))))
   :perform (test-op (op c)
                     (declare (ignore op c))
                     (symbol-call "FIASCO" "RUN-PACKAGE-TESTS"
