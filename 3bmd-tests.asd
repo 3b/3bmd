@@ -6,7 +6,9 @@
                 :components ((:file "package")
                              (:module "grammar"
                               :components ((:file "bullet-list")
-                                           (:file "spaces-and-newlines"))))))
+                                           (:file "spaces-and-newlines")
+                                           (:file "block-quote")
+                                           (:file "verbatim"))))))
   :perform (test-op (op c)
                     (declare (ignore op c))
                     (symbol-call "FIASCO" "RUN-PACKAGE-TESTS"
