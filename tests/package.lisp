@@ -9,7 +9,6 @@
                                    expected
                                    (fail-expected nil)
                                    (no-match nil)
-                                   (junk-allowed nil)
                                    (remaining-text nil))
   (let ((expected-remaining-text remaining-text))
     `(deftest ,name ()
@@ -30,8 +29,10 @@
                    (null ,no-match))
               (is (equalp result expected))
               (if ,expected-remaining-text
-                  (is (string= (subseq ,text remaining-text-start)
-                               ,expected-remaining-text))
+                  (let ((remaining-text
+                          (subseq ,text remaining-text-start)))
+                    (is (string= remaining-text
+                                 ,expected-remaining-text)))
                   (is (not remaining-text-start)))
               (is parse-succeeded))
              (,fail-expected
