@@ -8,6 +8,7 @@
                                    text
                                    expected
                                    (fail-expected nil)
+                                   (parse-should-succeed t)
                                    (no-match nil)
                                    (remaining-text nil))
   (let ((expected-remaining-text remaining-text))
@@ -34,7 +35,8 @@
                     (is (string= remaining-text
                                  ,expected-remaining-text)))
                   (is (not remaining-text-start)))
-              (is parse-succeeded))
+              (when ,parse-should-succeed
+                (is parse-succeeded)))
              (,fail-expected
               (is (typep catched-condition
                          ,fail-expected)))
