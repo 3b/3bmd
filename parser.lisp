@@ -302,7 +302,8 @@
 
 
 
-(defrule html-block (and (or html-block-in-tags html-comment
+(defrule html-block (and (or html-block-in-tags
+                             html-comment
                              html-processing-instruction
                              html-block-self-closing
                              html-block-non-closing)
