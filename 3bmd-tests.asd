@@ -5,10 +5,21 @@
   :components ((:module "tests"
                 :components ((:file "package")
                              (:module "grammar"
-                              :components ((:file "bullet-list")
-                                           (:file "spaces-and-newlines")
-                                           (:file "block-quote")
-                                           (:file "verbatim"))))))
+                              :components ((:file "spaces-and-newlines")
+                                           (:module "blocks"
+                                            :components ((:file "block-quote")
+                                                         (:file "bullet-list")
+                                                         (:file "heading")
+                                                         (:file "horizontal-rule")
+                                                         (:file "html-block")
+                                                         (:file "ordered-list")
+                                                         (:file "paragraph")
+                                                         (:file "plain")
+                                                         (:file "reference")
+                                                         (:file "verbatim")))
+                                           (:module "inlines"
+                                            :components ((:file "string")
+                                                         )))))))
   :perform (test-op (op c)
                     (declare (ignore op c))
                     (symbol-call "FIASCO" "RUN-PACKAGE-TESTS"
