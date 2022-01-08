@@ -14,12 +14,6 @@
   :expected '(:HEADING :LEVEL 3 :CONTENTS ("Hello" " " "Lisp" " " "World" "!")))
 
 
-(def-grammar-test atx-heading-test-2
-  :rule 3bmd-grammar::heading
-  :text "### Hello Lisp World!
-"
-  :expected '(:HEADING :LEVEL 3 :CONTENTS ("Hello" " " "Lisp" " " "World" "!")))
-
 (def-grammar-test atx-heading-nested-in-a-list
   :rule 3bmd-grammar::doc
   :text "* First line
