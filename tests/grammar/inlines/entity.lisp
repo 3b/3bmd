@@ -14,3 +14,18 @@
   :rule 3bmd-grammar::inlines
   :text "Hello &#x03BB; World!"
   :expected '("Hello" " " (:ENTITY "&#x03BB;") " " "World" "!"))
+
+
+(def-grammar-test nested-entity-test-1
+  :rule 3bmd-grammar::doc
+  :text "* List item
+
+  &lambda; is great!
+"
+  :expected '((:BULLET-LIST
+               (:LIST-ITEM (:PLAIN "List" " " "item")))
+              ;; TODO:
+              ;; This should be parsed as the second paragraph
+              ;; of the first list-item:
+              (:PLAIN "  " (:ENTITY "&lambda;") " " "is" " "
+               "great" "!")))
