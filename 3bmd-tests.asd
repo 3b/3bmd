@@ -1,6 +1,7 @@
-(defsystem 3bmd-tests
-  :depends-on (#:3bmd
-               #:fiasco)
+(defsystem "3bmd-tests"
+  :depends-on ("3bmd"
+               "3bmd-ext-code-blocks"
+               "fiasco")
   :serial t
   :components ((:module "tests"
                 :components ((:file "package")
@@ -23,6 +24,7 @@
                                                          (:file "emph")
                                                          (:file "image")
                                                          (:file "link")
+                                                         (:file "code")
                                                          (:file "ul-or-star"))))))))
   :perform (test-op (op c)
                     (declare (ignore op c))
