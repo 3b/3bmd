@@ -463,8 +463,10 @@
   (:constant ""))
 (defrule ul-or-star-line (or ul-line star-line)
   (:text t))
-(defrule star-line (or (and "****" (* #\*)) (and space-char (+ #\*) maybe-space-char)))
-(defrule ul-line (or (and "____" (* #\_)) (and space-char (+ #\_) maybe-space-char)))
+(defrule star-line (or (and "****" (* #\*))
+                       (and space-char (+ #\*) maybe-space-char)))
+(defrule ul-line (or (and "____" (* #\_))
+                     (and space-char (+ #\_) maybe-space-char)))
 
 (defrule space (+ space-char)
   (:text t))

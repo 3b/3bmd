@@ -94,7 +94,21 @@
   :text "     ")
 
 
-;;; End lines
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Endlines ;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; There are three types of endlines in 3BMD:
+;;
+;; Line breaks are can be inserted in the middle of a paragraph
+;; to manually break the line. Usually, when rendering to HTML
+;; these line breaks are rendered as <br/> tags.
+;;
+;; Terminal endlines are finish the document, because this rule
+;; matches only at the end of the whole document.
+;; 
+;; Normal endlines are ones that does not followed by a header,
+;; blank line or a block quote. Interesting, that 3BMD parser
+;; does not consider other block elements problem when parsing
+;; an endline. Thus these endlines are separate lines of text
+;; in the paragraph.
 
 (def-grammar-test normal-endline
   :rule 3bmd-grammar::endline
@@ -152,6 +166,8 @@ Some header
   :rule 3bmd-grammar::endline
   :text "  
 "
+  ;; TODO: Probably that is wrong that endline rule might return
+  ;; a (:line-break) or a text?
   :expected '(:LINE-BREAK))
 
 ;; TODO:
