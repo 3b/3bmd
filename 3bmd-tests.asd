@@ -21,6 +21,7 @@
                                             :components ((:file "string")
                                                          (:file "strong")
                                                          (:file "emph")
+                                                         (:file "image")
                                                          (:file "ul-or-star"))))))))
   :perform (test-op (op c)
                     (declare (ignore op c))
