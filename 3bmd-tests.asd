@@ -26,6 +26,7 @@
                                                          (:file "link")
                                                          (:file "code")
                                                          (:file "raw-html")
+                                                         (:file "entity")
                                                          (:file "ul-or-star"))))))))
   :perform (test-op (op c)
                     (declare (ignore op c))
