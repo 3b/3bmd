@@ -27,6 +27,7 @@
                                                          (:file "code")
                                                          (:file "raw-html")
                                                          (:file "entity")
+                                                         (:file "escaped-char")
                                                          (:file "ul-or-star"))))))))
   :perform (test-op (op c)
                     (declare (ignore op c))
