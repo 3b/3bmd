@@ -611,7 +611,9 @@
     (list :code a)))
 
 
-(defrule raw-html (or html-comment html-processing-instruction html-tag)
+(defrule raw-html (or html-comment
+                      html-processing-instruction
+                      html-tag)
   (:lambda (a)
     (list :raw-html a)))
 (defrule html-comment (and "<!--" (* (and (! "-->") character)) "-->")
