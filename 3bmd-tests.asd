@@ -20,6 +20,7 @@
                                            (:module "inlines"
                                             :components ((:file "string")
                                                          (:file "strong")
+                                                         (:file "emph")
                                                          (:file "ul-or-star"))))))))
   :perform (test-op (op c)
                     (declare (ignore op c))
