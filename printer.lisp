@@ -152,6 +152,7 @@
        (mapcar (lambda (a) (print-element a stream)) label)
        (format stream "</a>"))
       (t
+       (warn "Unresolvable reference link ~S~%" rest)
        (format stream "[")
        (mapcar (lambda (a) (print-element a stream)) label)
        (format stream "]~@[~a~]" (getf rest :tail))))))
