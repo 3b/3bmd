@@ -27,7 +27,7 @@
 
 (defun print-md-escaped (string stream)
   (loop for char across string
-        do (when (and (not *in-code*) (find char "*_`"))
+        do (when (and (not *in-code*) (find char "*_`[]{}"))
              (write-char #\\ stream))
            (write-char char stream)
            (when (char= char #\Newline)
