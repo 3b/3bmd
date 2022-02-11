@@ -78,9 +78,9 @@
 
 #++
 (let ((*smart-quotes* nil))
-  (esrap:parse 'inline "..."))
+  (esrap:parse '%inline "..."))
 #++
-(esrap:find-rule 'inline)
+(esrap:find-rule '%inline)
 
 
 

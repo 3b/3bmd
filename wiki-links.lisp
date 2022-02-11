@@ -78,11 +78,11 @@
 
 #++
 (let ((3bmd-wiki:*wiki-links* t))
-  (esrap:parse 'inline "[[foo|bar]]"))
+  (esrap:parse '%inline "[[foo|bar]]"))
 
 #++
 (let ((3bmd-wiki:*wiki-links* t))
-  (esrap:parse 'inline "'[[foo|bar]]"))
+  (esrap:parse '%inline "'[[foo|bar]]"))
 
 #++
 (let ((3bmd-wiki:*wiki-links* t))
