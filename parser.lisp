@@ -206,16 +206,16 @@
                                (+ (and (! endline) %inline))
                                sp newline
                                setext-bottom-1)
-  (:destructure (& content s nl line)
-                (declare (ignore & s nl line))
+  (:destructure (part-& content s nl line)
+                (declare (ignore part-& s nl line))
                 (list :heading :level 1 :contents (mapcar 'second content))))
 
 (defrule setext-heading-2 (and (& (and raw-line setext-bottom-2))
                                (+ (and (! endline) %inline))
                                sp newline
                                setext-bottom-2)
-  (:destructure (& content s nl line)
-                (declare (ignore & s nl line))
+  (:destructure (part-& content s nl line)
+                (declare (ignore part-& s nl line))
                 (list :heading :level 2 :contents (mapcar 'second content))))
 
 
@@ -225,12 +225,14 @@
   (:constant :bullet-list))
 (defrule bullet-list (and (& bullet) (or list-tight list-loose))
   (:destructure (a b)
+                (declare (ignore a))
                 (cons :bullet-list b)))
 
 (defrule enumerator (and nonindent-space (+ dec-digit) #\. (+ space-char))
   (:constant :counted-list))
 (defrule ordered-list (and (& enumerator) (or list-tight list-loose))
   (:destructure (a b)
+                (declare (ignore a))
                 (cons :counted-list b)))
 
 
