@@ -124,7 +124,7 @@ especially, without heading:
         !yt[nbY-meOL57I]
         !yt[nbY-meOL57I|width=20,allowfullscreen]"
 
-* Loading `3bmd-math.asd` adds support for math markup with libraries like MathJax. If `3bmd-math:*math*` is non-`NIL` while parsing, the shorthand syntax `$$ latex markup $$` can be be used. For example:
+* Loading `3bmd-ext-math.asd` adds support for math markup with libraries like MathJax. If `3bmd-math:*math*` is non-`NIL` while parsing, the shorthand syntax `$$ latex markup $$` can be be used. For example:
 
         $$
         \frac{\partial E}{\partial y} = \frac{\partial }{\partial y} \frac{1}{n}\sum_{i=1}^{n} (y_i - a_i)^2
