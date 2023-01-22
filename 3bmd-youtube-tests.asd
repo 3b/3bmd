@@ -7,5 +7,7 @@
   :components ((:file "youtube-tests"))
   :perform (test-op (op c)
                     (declare (ignore op c))
-                    (symbol-call "FIASCO" "RUN-PACKAGE-TESTS"
-                                 :package '#:3bmd-youtube-tests)))
+                    (or
+                     (symbol-call "FIASCO" "RUN-PACKAGE-TESTS"
+                                  :package '#:3bmd-youtube-tests)
+                     (error "tests failed"))))

@@ -31,5 +31,7 @@
                                                          (:file "ul-or-star"))))))))
   :perform (test-op (op c)
                     (declare (ignore op c))
-                    (symbol-call "FIASCO" "RUN-PACKAGE-TESTS"
-                                 :package '#:3bmd-tests)))
+                    (or
+                     (symbol-call "FIASCO" "RUN-PACKAGE-TESTS"
+                                  :package '#:3bmd-tests)
+                     (error "tests failed"))))
