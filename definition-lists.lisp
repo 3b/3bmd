@@ -92,7 +92,7 @@
 
 (defrule definition-term-inlines (+ (and (! definition-marker)
                                          (+ (and (! 3bmd-grammar::endline)
-                                                 3bmd-grammar::inline))
+                                                 3bmd-grammar::%inline))
                                          definition-endline))
   (:destructure (&rest terms)
     (mapcar (lambda (a) (mapcar (lambda (b)
