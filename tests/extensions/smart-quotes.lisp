@@ -41,18 +41,11 @@
 
 (def-grammar-test single-quoted3
   :enable-extensions 3bmd-grammar::*smart-quotes*
-  :rule 3bmd-grammar::smart
-  :text "'te'xt' a'"
-  :expected '(:single-quoted "te"))
-
-(def-grammar-test single-quoted3
-  :enable-extensions 3bmd-grammar::*smart-quotes*
   :rule 3bmd-grammar::%block
   :text "'te'xt' a'"
   ;; todo: check common mark spec to see how these should parse
   :fail-expected t
   :expected '(:plain (:single-quoted "te" :apostrophe "xt" :apostrophe " a")))
-
 
 (def-grammar-test single-quoted4
   :enable-extensions 3bmd-grammar::*smart-quotes*
