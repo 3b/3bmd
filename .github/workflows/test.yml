@@ -80,14 +80,29 @@ jobs:
     - name: load code from clean fasl cache
       uses: 40ants/run-tests@v2
       with:
-        asdf-system: 3bmd-tests
+        asdf-system: 3bmd
 
     - name: load from fasls
       uses: 40ants/run-tests@v2
       with:
-        asdf-system: 3bmd-tests
+        asdf-system: 3bmd
 
-    - name: extension tests
+    - name: test youtube extension
       uses: 40ants/run-tests@v2
       with:
-        asdf-system: 3bmd-youtube-tests
+        asdf-system: 3bmd-youtube
+
+    - name: test table extension
+      uses: 40ants/run-tests@v2
+      with:
+        asdf-system: 3bmd-ext-tables
+
+    - name: test wiki links extension
+      uses: 40ants/run-tests@v2
+      with:
+        asdf-system: 3bmd-ext-wiki-links
+
+    - name: test definition-list extension
+      uses: 40ants/run-tests@v2
+      with:
+        asdf-system: 3bmd-ext-definition-lists
