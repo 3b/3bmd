@@ -28,7 +28,9 @@
                                                          (:file "raw-html")
                                                          (:file "entity")
                                                          (:file "escaped-char")
-                                                         (:file "ul-or-star"))))))))
+                                                         (:file "ul-or-star")))))
+                             (:module "extensions"
+                              :components ((:file "smart-quotes"))))))
   :perform (test-op (op c)
                     (declare (ignore op c))
                     (or
