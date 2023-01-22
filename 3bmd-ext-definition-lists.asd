@@ -2,7 +2,8 @@
   :description "extension to 3bmd implementing 'PHP Markdown Extra' style definition lists"
   :depends-on (3bmd colorize alexandria)
   :serial t
-  :components ((:file "definition-lists")))
+  :components ((:file "definition-lists"))
+  :in-order-to ((test-op (test-op 3bmd-ext-definition-lists/tests))))
 
 (defsystem 3bmd-ext-definition-lists/tests
   :depends-on (#:3bmd-ext-definition-lists #:3bmd-tests #:fiasco)
