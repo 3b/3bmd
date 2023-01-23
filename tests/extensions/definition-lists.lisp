@@ -1,4 +1,5 @@
 (fiasco:define-test-package #:3bmd-definition-list-tests
+  (:use #:3bmd-tests)
   (:import-from #:3bmd-definition-lists
                 #:definition-list
                 #:definition-list-item
@@ -45,5 +46,36 @@ term 2
                ((DEFINITION-TERM "term" " " "2"))
                :DEFINITIONS
                ((DEFINITION-LIST-ITEM (:PLAIN "definition" " " "2"))))))
+
+
+(def-print-test print-definition-lists-1 ;; bug #43
+  :enable-extensions 3bmd-definition-lists:*definition-lists*
+  :format :markdown
+  :text "term1 `q`
+term2
+:  def
+  def continued
+"
+  :expected "term1 `q`
+term2
+: def
+  def continued
+")
+
+(def-print-test print-definition-lists-2 ;; bug #43
+  :enable-extensions 3bmd-definition-lists:*definition-lists*
+  :text "term1 `q`
+term2
+:  def
+  def continued
+"
+  :expected "<dl>
+
+<dt>term1 <code>q</code></dt>
+<dt>term2</dt>
+<dd>def
+  def continued</dd>
+</dl>
+")
 
 ;; todo: add remaining tests from extension

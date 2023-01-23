@@ -1,4 +1,6 @@
-(fiasco:define-test-package #:3bmd-tests)
+(fiasco:define-test-package #:3bmd-tests
+  (:export #:def-grammar-test
+           #:def-print-test))
 
 (in-package 3bmd-tests)
 
@@ -51,3 +53,42 @@
                            ,fail-expected)))
                (t
                 (is (not parse-succeeded))))))))))
+
+;; todo: this should do something smarter than exact string match for
+;; html compare, but won't worry about it until there are enough tests
+;; and code changes for manual verification to be too much work.
+(defmacro def-print-test (name &key
+                                 (rule '3bmd-grammar::doc)
+                                 text
+                                 (format :html)
+                                 expected
+                                 (enable-extensions nil)
+                                 known-failure)
+  (let ((enable-extensions (uiop:ensure-list enable-extensions)))
+    `(deftest ,name ()
+       ,@(when known-failure
+           '((skip)))
+       (let ((expected ,expected))
+         (progv
+             ',enable-extensions
+             (mapcar (constantly t)
+                     ',enable-extensions)
+           (multiple-value-bind (parsed remaining-text parse-succeeded)
+               (esrap:parse ',rule ,text)
+             (is parse-succeeded)
+             (is (not remaining-text))
+             (let ((printed
+                     (with-output-to-string (s)
+                       (3bmd:print-doc-to-stream parsed s :format ,format))))
+               (is (equalp printed expected)))
+             ,@(when (eql format :markdown)
+                 ;; if printing to markdown, we should be able to
+                 ;; parse it and get the same parse as original input
+                 ;; (printed might not be same as original input, but
+                 ;; should have same meaning)
+                 `((multiple-value-bind (reparsed
+                                         remaining-text-2 parse-succeeded-2)
+                       (esrap:parse ',rule ,text)
+                     (is parse-succeeded-2)
+                     (is (not remaining-text-2))
+                     (is (equalp parsed reparsed)))))))))))
