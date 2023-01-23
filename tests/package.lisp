@@ -62,13 +62,15 @@
                                  text
                                  (format :html)
                                  expected
+                                 warn
                                  (enable-extensions nil)
                                  known-failure)
   (let ((enable-extensions (uiop:ensure-list enable-extensions)))
     `(deftest ,name ()
        ,@(when known-failure
            '((skip)))
-       (let ((expected ,expected))
+       (let ((expected ,expected)
+             (signalled-warnings nil))
          (progv
              ',enable-extensions
              (mapcar (constantly t)
@@ -78,17 +80,28 @@
              (is parse-succeeded)
              (is (not remaining-text))
              (let ((printed
-                     (with-output-to-string (s)
-                       (3bmd:print-doc-to-stream parsed s :format ,format))))
-               (is (equalp printed expected)))
-             ,@(when (eql format :markdown)
-                 ;; if printing to markdown, we should be able to
-                 ;; parse it and get the same parse as original input
-                 ;; (printed might not be same as original input, but
-                 ;; should have same meaning)
-                 `((multiple-value-bind (reparsed
-                                         remaining-text-2 parse-succeeded-2)
-                       (esrap:parse ',rule ,text)
-                     (is parse-succeeded-2)
-                     (is (not remaining-text-2))
-                     (is (equalp parsed reparsed)))))))))))
+                     (handler-bind ((warning (lambda (c)
+                                               (push c signalled-warnings)
+                                               (muffle-warning c))))
+                       (with-output-to-string (s)
+                         (3bmd:print-doc-to-stream parsed s :format ,format)))))
+               (is (equalp printed expected))
+               ,@(if warn
+                     ;; just supporting 1 warning for now
+                     `((is (= 1 (length signalled-warnings)))
+                       (let ((signalled-warning (format nil "~a"
+                                                        (car signalled-warnings))))
+                         (is (string= signalled-warning ,warn))))
+
+                     `((is (not signalled-warnings))))
+               ,@(when (eql format :markdown)
+                   ;; if printing to markdown, we should be able to
+                   ;; parse it and get the same parse as original input
+                   ;; (printed might not be same as original input, but
+                   ;; should have same meaning)
+                   `((multiple-value-bind (reparsed
+                                           remaining-text-2 parse-succeeded-2)
+                         (esrap:parse ',rule ,text)
+                       (is parse-succeeded-2)
+                       (is (not remaining-text-2))
+                       (is (equalp parsed reparsed))))))))))))
