@@ -72,3 +72,27 @@ World!
               (:PLAIN "  " "The" " " "header" "
 "
                "  " "==========")))
+
+(def-grammar-test atx-heading-in-a-list ;; bug 35
+  ;;; marked bug as invalid, since original markdown is inconsistent
+  ;;; about parsing headings in lists, but commonmark says a space is
+  ;;; required after # to be a heading, which we don't match, so
+  ;;; leaving this here
+  :text "* #foo
+* # foo
+* ##bar
+* ## bar
+"
+  :known-failure t
+  :expected '((:BULLET-LIST
+               (:LIST-ITEM (:PLAIN "#foo"))
+               (:LIST-ITEM (:HEADING :LEVEL 1 :CONTENTS ("foo")))
+               (:LIST-ITEM (:PLAIN "##bar"))
+               (:LIST-ITEM (:HEADING :LEVEL 2 :CONTENTS ("bar"))))))
+
+(def-grammar-test atx-heading-test-1b
+  ;; todo: commonmark says this shouldn't be a heading, see above
+  :text "#Hello Lisp World!
+"
+  :known-failure t
+  :expected '(:PLAIN "#Hello" " " "Lisp" " " "World" "!"))

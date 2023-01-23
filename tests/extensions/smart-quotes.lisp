@@ -44,21 +44,21 @@
   :rule 3bmd-grammar::%block
   :text "'te'xt' a'"
   ;; todo: check common mark spec to see how these should parse
-  :fail-expected t
+  :known-failure t
   :expected '(:plain (:single-quoted "te" :apostrophe "xt" :apostrophe " a")))
 
 (def-grammar-test single-quoted4
   :enable-extensions 3bmd-grammar::*smart-quotes*
   :rule 3bmd-grammar::%block
   :text "'te'xt'a'"
-  :fail-expected t ;; todo: this should parse
+  :known-failure t ;; todo: this should parse
   :expected '(:plain (:single-quoted "te" :apostrophe "xt" :apostrophe "a")))
 
 (def-grammar-test single-quoted5
   :enable-extensions 3bmd-grammar::*smart-quotes*
   :rule 3bmd-grammar::%block
   :text "'te'xt 'a'"
-  :fail-expected t  ;; todo: this should parse (not sure exact results though?
+  :known-failure t  ;; todo: this should parse (not sure exact results though?)
   :expected '(:plain (:single-quoted "te") "xt" " " (:single-quoted "a")))
 
 (def-grammar-test double-quote-1

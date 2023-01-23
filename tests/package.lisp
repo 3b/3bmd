@@ -11,10 +11,13 @@
                                    (parse-should-succeed t)
                                    (no-match nil)
                                    (remaining-text nil)
-                                   (enable-extensions nil))
+                                   (enable-extensions nil)
+                                   known-failure)
   (let ((expected-remaining-text remaining-text)
         (enable-extensions (uiop:ensure-list enable-extensions)))
     `(deftest ,name ()
+       ,@ (when known-failure
+            '((skip)))
        (let ((expected ,expected)
              (catched-condition nil))
          (progv

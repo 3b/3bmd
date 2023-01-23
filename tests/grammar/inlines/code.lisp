@@ -82,6 +82,29 @@ code
               :CONTENT "Some
 code"))
 
+(def-grammar-test code-test-7a ;; bug 19
+  :enable-extensions 3bmd-code-blocks:*code-blocks*
+  :text "abc
+```python
+Some
+code
+```
+def
+
+abc
+def
+
+"
+  :expected '((:paragraph "abc")
+              (3BMD-CODE-BLOCKS::CODE-BLOCK
+               :LANG "python"
+               :PARAMS NIL
+               :CONTENT "Some
+code")
+              (:paragraph
+               "def"))
+  :known-failure t)
+
 
 ;; Now we check how does it work with nesting in a list
 

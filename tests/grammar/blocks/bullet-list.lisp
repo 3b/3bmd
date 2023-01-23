@@ -18,6 +18,26 @@
                (:LIST-ITEM (:PARAGRAPH "Foo"))
                (:LIST-ITEM (:PARAGRAPH "Bar")))))
 
+(def-grammar-test parse-list-with-separated-items-2 ;; bug 8
+  :text "* l0
+* l1
+* l2
+
+* l3
+
+* l4
+* l5
+* l6
+"
+  :expected '((:BULLET-LIST
+               (:LIST-ITEM (:PARAGRAPH "l0"))
+               (:LIST-ITEM (:PARAGRAPH "l1"))
+               (:LIST-ITEM (:PARAGRAPH "l2"))
+               (:LIST-ITEM (:PARAGRAPH "l3"))
+               (:LIST-ITEM (:PARAGRAPH "l4"))
+               (:LIST-ITEM (:PARAGRAPH "l5"))
+               (:LIST-ITEM (:PARAGRAPH "l6")))))
+
 
 (def-grammar-test parse-list-with-multiline-item
   :text "* Foo
