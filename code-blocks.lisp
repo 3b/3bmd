@@ -18,7 +18,8 @@
            #:*code-blocks-pre-class*
            #:*code-blocks-pre-class-format*
            #:*code-blocks-span-class*
-           #:*code-blocks-coloring-type-remap*))
+           #:*code-blocks-coloring-type-remap*
+           #:*colorize-name-map*))
 
 (in-package #:3bmd-code-blocks)
 

@@ -50,7 +50,7 @@ todo:
           (list bar))
         ```
 
-    Language names ignore case and whitespace, so `Common Lisp` and `commonlisp` are treated the same, see `3bmd:*colorize-name-map*` for full list of supported language names, or add names to that to recognize a custom colorize `coloring-type`.
+    Language names ignore case and whitespace, so `Common Lisp` and `commonlisp` are treated the same, see `3bmd-code-blocks:*colorize-name-map*` for full list of supported language names, or add names to that to recognize a custom colorize `coloring-type`.
     If a language name is not specified after the opening ```` ``` ````, `3bmd-code-blocks:*code-blocks-default-colorize*` can be set to one of the keywords naming a `coloring-type` recognized by `colorize` to specify a default, otherwise the block will not be colorized.
 
     Can optionally use `Pygments` instead of `colorize` by setting `3bmd-code-blocks:*renderer*` to  `:pygments`. Lexer and formatter options (`-O`) can be specified like ```` ```c++|linenos=1````.
