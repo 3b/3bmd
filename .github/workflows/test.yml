@@ -43,7 +43,7 @@ jobs:
           ~/.roswell
           /usr/local/etc/roswell
           .qlot
-        key: "${{ steps.current-month.outputs.value }}-${{ runner.os }}-${{ matrix.lisp }}-${{ env.cache-name }}-${{ hashFiles('qlfile.lock') }}"
+        key: "${{ steps.current-month.outputs.value }}-${{ runner.os }}-${{ matrix.lisp }}-${{ env.cache-name }}-${{ hashFiles('**/*.asd') }}"
         restore-keys: |
           ${{ steps.current-month.outputs.value }}-${{ runner.os }}-${{ matrix.lisp }}-
           ${{ steps.current-month.outputs.value }}-${{ runner.os }}-
