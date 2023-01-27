@@ -35,3 +35,23 @@
   ;; Seems this is a bug and more complex regular expression
   ;; should be used to match all possible emails
   :fail-expected 'esrap:esrap-parse-error)
+
+
+(def-grammar-test reference-link-test-1
+  :text "[link]
+
+[link]: http://example.com/ \"title\""
+  :expected '((:PARAGRAPH
+               (:REFERENCE-LINK :LABEL ("link") :TAIL NIL))
+              (:REFERENCE :LABEL ("link") :SOURCE "http://example.com/"
+                          :TITLE "title")))
+
+
+(def-grammar-test reference-link-test-2
+  :text "# [link]
+
+[link]: http://example.com/ \"title\""
+  :expected '((:HEADING :LEVEL 1 :CONTENTS
+               ((:REFERENCE-LINK :LABEL ("link") :TAIL NIL)))
+              (:REFERENCE :LABEL ("link") :SOURCE "http://example.com/"
+                          :TITLE "title")))
