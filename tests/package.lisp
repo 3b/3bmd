@@ -14,7 +14,8 @@
                                    (no-match nil)
                                    (remaining-text nil)
                                    (enable-extensions nil)
-                                   known-failure)
+                                   known-failure
+                                   bind)
   (let ((expected-remaining-text remaining-text)
         (enable-extensions (uiop:ensure-list enable-extensions)))
     `(deftest ,name ()
@@ -23,9 +24,11 @@
        (let ((expected ,expected)
              (catched-condition nil))
          (progv
-             ',enable-extensions
-             (mapcar (constantly t)
-                     ',enable-extensions)
+             ',(append enable-extensions
+                       (mapcar 'first bind))
+             ',(append (mapcar (constantly t)
+                               enable-extensions)
+                       (mapcar 'second bind))
            (multiple-value-bind (result remaining-text-start parse-succeeded)
                (block parser-call
                  (handler-bind
@@ -64,7 +67,8 @@
                                  expected
                                  warn
                                  (enable-extensions nil)
-                                 known-failure)
+                                 known-failure
+                                 bind)
   (let ((enable-extensions (uiop:ensure-list enable-extensions)))
     `(deftest ,name ()
        ,@(when known-failure
@@ -72,9 +76,11 @@
        (let ((expected ,expected)
              (signalled-warnings nil))
          (progv
-             ',enable-extensions
-             (mapcar (constantly t)
-                     ',enable-extensions)
+             ',(append enable-extensions
+                       (mapcar 'first bind))
+             ',(append (mapcar (constantly t)
+                               enable-extensions)
+                       (mapcar 'second bind))
            (multiple-value-bind (parsed remaining-text parse-succeeded)
                (esrap:parse ',rule ,text)
              (is parse-succeeded)
