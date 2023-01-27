@@ -79,7 +79,8 @@ todo:
     ```
     <pre class="brush: lisp;"><code>...</code></pre>    
     ```
-    
+
+    Inline code spans (like `` `this` ``) can also be optionally highlighted with `3bmd-ext-code-blocks`. Set `3bmd-code-blocks:*render-code-spans*` to true, and set `3bmd-code-blocks:*render-code-spans-lang*` to the desired language.
 
 * Loading `3bmd-ext-definition-lists.asd` adds support for parsing PHP Markdown Extra style definition lists
      If `3bmd-definition-lists:*definition-lists*` is non-`NIL` while parsing, the following definition list will be recognized (see <http://michelf.ca/projects/php-markdown/extra/#def-list>):
