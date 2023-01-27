@@ -2,6 +2,8 @@ Common Lisp [Markdown][] -> html converter, using [esrap][] for parsing, and gra
 
 Currently a bit slow and uses lots of RAM for large documents (particularly when using the top-level `doc` parser instead of reading documents as a sequence of `block`s), but seems to handle the tests from [peg-markdown] reasonably well.
 
+Note that this library processes `[Markdown][]` and not the newer (and better specified) `[CommonMark][]`, so may not behave quite as expected for people used to the latter. See [issue #53](https://github.com/3b/3bmd/issues/53) for some discussion on why CommonMark support isn't current planned, and would probably be in a separate library if it were implemented.
+
 todo:
 
 * clean up API
@@ -13,6 +15,7 @@ todo:
 [esrap]: https://github.com/nikodemus/esrap
 [peg-markdown]: https://github.com/jgm/peg-markdown
 [peg/leg]: http://piumarta.com/software/peg/peg.1.html
+[CommonMark]: https://commonmark.org/
 
 ## Extensions:
 
