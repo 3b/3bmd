@@ -82,7 +82,8 @@
 ;; todo: minimize extra newlines...
 (defmethod print-tagged-element ((tag (eql :heading)) stream rest)
   (let* ((contents (with-output-to-string (stream)
-                     (mapcar (lambda (a) (print-element a stream)) (getf rest :contents))))
+                     (dolist (a (getf rest :contents))
+                       (print-element a stream))))
          (id (when *generate-header-ids* (html-content-id contents))))
     (padded (2 stream)
       (format stream "<h~d~@[ id=~s~]>" (getf rest :level) id)
@@ -92,28 +93,33 @@
 (defmethod print-tagged-element ((tag (eql :paragraph)) stream rest)
   (padded (2 stream)
     (format stream "<p>")
-    (mapcar (lambda (a) (print-element a stream)) rest)
+    (dolist (a rest)
+      (print-element a stream))
     (format stream "</p>")))
 
 (defmethod print-tagged-element ((tag (eql :block-quote)) stream rest)
   (padded (2 stream)
     (format stream "<blockquote>~%")
-    (mapcar (lambda (a) (print-element a stream)) rest)
+    (dolist (a rest)
+      (print-element a stream))
     (format stream "~&</blockquote>")))
 
 (defmethod print-tagged-element ((tag (eql :plain)) stream rest)
   (padded (1 stream)
-    (mapcar (lambda (a) (print-element a stream)) rest)))
+    (dolist (a rest)
+      (print-element a stream))))
 
 
 (defmethod print-tagged-element ((tag (eql :emph)) stream rest)
   (format stream "<em>")
-  (mapcar (lambda (a) (print-element a stream)) rest)
+  (dolist (a rest)
+    (print-element a stream))
   (format stream "</em>"))
 
 (defmethod print-tagged-element ((tag (eql :strong)) stream rest)
   (format stream "<strong>")
-  (mapcar (lambda (a) (print-element a stream)) rest)
+  (dolist (a rest)
+    (print-element a stream))
   (format stream "</strong>"))
 
 (defmethod print-tagged-element ((tag (eql :link)) stream rest)
@@ -138,7 +144,8 @@
           (getf rest :source)
           (escape-string
            (or (getf rest :title) (if *always-title* "" nil))))
-  (mapcar (lambda (a) (print-element a stream)) (getf rest :label))
+  (dolist (a (getf rest :label))
+    (print-element a stream))
   (format stream "</a>"))
 
 (defmethod print-tagged-element ((tag (eql :reference-link)) stream rest)
@@ -149,19 +156,25 @@
       (ref
        (format stream "<a href=\"~a\" ~@[title=\"~a\"~]>" (first ref)
                (escape-string (or (second ref) (if *always-title* "" nil))))
-       (mapcar (lambda (a) (print-element a stream)) label)
+       (dolist (a label)
+         (print-element a stream))
        (format stream "</a>"))
       (t
+       (warn "Unresolvable reference link ~S~%" rest)
        (format stream "[")
-       (mapcar (lambda (a) (print-element a stream)) label)
-       (format stream "]~@[~a~]" (getf rest :tail))))))
+       (dolist (a label)
+         (print-element a stream))
+       (format stream "]~@[[~a]~]~@[~a~]"
+               (getf rest :definition)
+               (getf rest :tail))))))
 
 (defmethod print-tagged-element ((tag (eql :image)) stream rest)
   (setf rest (cdr (first rest)))
   (format stream "<img src=\"~a\" ~@[alt=\"~a\"~] ~@[title=\"~a\"~]/>"
           (getf rest :source)
           (with-output-to-string (s)
-            (mapcar (lambda (a) (print-element a s)) (getf rest :label)))
+            (dolist (a (getf rest :label))
+              (print-element a s)))
           (escape-string
            (or (getf rest :title) (if *always-title* "" nil)))))
 
@@ -169,21 +182,24 @@
 (defmethod print-tagged-element ((tag (eql :counted-list)) stream rest)
   (padded (2 stream)
     (format stream "<ol>"))
-  (mapcar (lambda (a) (print-element a stream)) rest)
+  (dolist (a rest)
+    (print-element a stream))
   (padded (1 stream)
     (format stream "~&</ol>")))
 
 (defmethod print-tagged-element ((tag (eql :bullet-list)) stream rest)
   (padded (2 stream)
     (format stream "<ul>"))
-  (mapcar (lambda (a) (print-element a stream)) rest)
+  (dolist (a rest)
+    (print-element a stream))
   (padded (1 stream)
     (format stream "</ul>")))
 
 (defmethod print-tagged-element ((tag (eql :list-item)) stream rest)
   (padded (1 stream 2)
     (format stream "<li>"))
-  (mapcar (lambda (a) (print-element a stream)) rest)
+  (dolist (a rest)
+    (print-element a stream))
   (format stream "</li>")
   (setf *padding* 0))
 
@@ -208,7 +224,8 @@
 (defmethod print-tagged-element ((tag (eql :verbatim)) stream rest)
   (padded (2 stream)
     (format stream "<pre><code>")
-    (mapcar (lambda (a) (print-element a stream)) rest)
+    (dolist (a rest)
+      (print-element a stream))
     (format stream "</code></pre>")))
 
 ;;; track whether we are in a code block, so we can avoid smart-quote
@@ -222,14 +239,16 @@
 (defmethod print-tagged-element ((tag (eql :code)) stream rest)
   (format stream "<code>")
   (let ((*in-code* t))
-    (mapcar (lambda (a) (print-element a stream)) rest))
+    (dolist (a rest)
+      (print-element a stream)))
   (format stream "</code>"))
 
 (defmethod print-tagged-element ((tag (eql :single-quoted)) stream rest)
   (if *in-code*
       (format stream "'")
       (format stream "&lsquo;"))
-  (mapcar (lambda (a) (print-element a stream)) rest)
+  (dolist (a rest)
+    (print-element a stream))
   (if *in-code*
       (format stream "'")
       (format stream "&rsquo;")))
@@ -238,7 +257,8 @@
   (if *in-code*
       (format stream "\"")
       (format stream "&ldquo;"))
-  (mapcar (lambda (a) (print-element a stream)) rest)
+  (dolist (a rest)
+    (print-element a stream))
   (if *in-code*
       (format stream "\"")
       (format stream "&rdquo;")))

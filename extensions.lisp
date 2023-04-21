@@ -86,10 +86,10 @@
        (esrap:change-rule ',rule ,exp))))
 
 (defmacro define-extension-inline (extension-flag name expression &body options)
-  (%make-definer extension-flag name expression options '%inline-rules% 'inline
-                 '(cons 'or %inline-rules%)))
+  (%make-definer extension-flag name expression options '%inline-rules%
+                 '%inline '(cons 'or %inline-rules%)))
 
 (defmacro define-extension-block (extension-flag name expression &body options)
-  (%make-definer extension-flag name expression options '%block-rules% 'block
+  (%make-definer extension-flag name expression options '%block-rules% '%block
                  '`(and (* blank-line) (or ,@%block-rules%))))
 

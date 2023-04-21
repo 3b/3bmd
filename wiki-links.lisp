@@ -15,7 +15,7 @@
 ;;; define-extension-inline to add the extension to the main grammar
 
 ;; allowing markup for now, to be normalized like ref links during printing...
-(defrule wiki-link-label (* (and (! #\]) (! #\|) inline))
+(defrule wiki-link-label (* (and (! #\]) (! #\|) 3bmd-grammar::%inline))
   (:lambda (a)
     (mapcar 'third a)))
 
@@ -78,11 +78,11 @@
 
 #++
 (let ((3bmd-wiki:*wiki-links* t))
-  (esrap:parse 'inline "[[foo|bar]]"))
+  (esrap:parse '%inline "[[foo|bar]]"))
 
 #++
 (let ((3bmd-wiki:*wiki-links* t))
-  (esrap:parse 'inline "'[[foo|bar]]"))
+  (esrap:parse '%inline "'[[foo|bar]]"))
 
 #++
 (let ((3bmd-wiki:*wiki-links* t))

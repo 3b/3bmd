@@ -32,7 +32,7 @@
   (:constant ""))
 (defrule single-quoted (and single-quote-start
                             (+ (and (! single-quote-end)
-                                    inline))
+                                    %inline))
                             single-quote-end)
   (:destructure (q content q2)
                 (declare (ignore q q2))
@@ -45,7 +45,7 @@
   (:constant ""))
 (defrule double-quoted (and double-quote-start
                             (+ (and (! double-quote-end)
-                                    inline))
+                                    %inline))
                             double-quote-end)
   (:destructure (q content q2)
                 (declare (ignore q q2))
@@ -78,9 +78,9 @@
 
 #++
 (let ((*smart-quotes* nil))
-  (esrap:parse 'inline "..."))
+  (esrap:parse '%inline "..."))
 #++
-(esrap:find-rule 'inline)
+(esrap:find-rule '%inline)
 
 
 

@@ -92,7 +92,7 @@
 
 (defrule definition-term-inlines (+ (and (! definition-marker)
                                          (+ (and (! 3bmd-grammar::endline)
-                                                 3bmd-grammar::inline))
+                                                 3bmd-grammar::%inline))
                                          definition-endline))
   (:destructure (&rest terms)
     (mapcar (lambda (a) (mapcar (lambda (b)
@@ -139,6 +139,21 @@
   (setf 3bmd::*padding* 0))
 
 
+(defmethod print-md-tagged-element ((tag (eql 'definition-list)) stream rest)
+  (loop for def in rest
+        do (destructuring-bind (&key terms definitions) def
+             (mapcar (lambda (a) (print-md-element a stream)) terms)
+             (mapcar (lambda (a) (print-md-element a stream)) definitions))))
+
+(defmethod print-md-tagged-element ((tag (eql 'definition-term)) stream rest)
+  (mapcar (lambda (a) (print-md-element a stream)) rest)
+  (terpri stream))
+
+(defmethod print-md-tagged-element ((tag (eql 'definition-list-item)) stream rest)
+  (format stream ": ")
+  (mapcar (lambda (a) (print-md-element a stream)) rest)
+  (terpri stream))
+
 
 #++
 (let ((*definition-lists* t))
@@ -147,6 +162,19 @@ term2
 :  def
   def continued
 "))
+
+#++
+(let ((*definition-lists* t))
+  (print
+   (with-output-to-string (s)
+    (3bmd:print-doc-to-stream 
+     (esrap:parse '3bmd-grammar::doc "term1 `q`
+term2
+:  def
+  def continued
+")
+     s :format :markdown))))
+
 
 
 #++

@@ -70,17 +70,21 @@
   (format s "~{~a ~}" (cdr o)))
 
 (pprinter :line-break (s o)
+  (declare (ignore o))
   (format s "~%"))
 
 (pprinter :horizontal-rule (s o)
+  (declare (ignore o))
   (format s "----- "))
 
 
 (pprinter :html (s o)
+  (declare (ignore s o))
   ;; should this print anything?
   )
 
 (pprinter :raw-html (s o)
+  (declare (ignore s o))
   ;; should this print anything?
   )
 
@@ -119,10 +123,12 @@
   (format s "~{~a ~}" (cdr o)))
 
 (pprinter :reference (s o)
+  (declare (ignore s o))
   ;?(format s "~{~a ~}" (cdr o))
   )
 
 (pprinter :apostrophe (s o)
+  (declare (ignore o))
   (format s "'"))
 
 

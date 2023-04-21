@@ -27,7 +27,7 @@
 
 (defun print-md-escaped (string stream)
   (loop for char across string
-        do (when (and (not *in-code*) (find char "*_`"))
+        do (when (and (not *in-code*) (find char "*_`[]{}"))
              (write-char #\\ stream))
            (write-char char stream)
            (when (char= char #\Newline)
@@ -44,68 +44,68 @@
   (ensure-block stream)
   (loop repeat (getf rest :level) do (write-char #\# stream))
   (write-char #\Space stream)
-  (map nil (lambda (a) (print-md-element a stream)) (getf rest :contents))
+  (dolist (a (getf rest :contents)) (print-md-element a stream))
   (end-block stream))
 
 (defmethod print-md-tagged-element ((tag (eql :paragraph)) stream rest)
   (ensure-block stream)
-  (map nil (lambda (a) (print-md-element a stream)) rest)
+  (dolist (a rest) (print-md-element a stream))
   (end-block stream))
 
 (defmethod print-md-tagged-element ((tag (eql :block-quote)) stream rest)
   (with-md-indent (4)
-    (map nil (lambda (a) (print-md-element a stream)) rest)))
+    (dolist (a rest) (print-md-element a stream))))
 
 (defmethod print-md-tagged-element ((tag (eql :plain)) stream rest)
   (ensure-block stream)
-  (map nil (lambda (a) (print-md-element a stream)) rest))
+  (dolist (a rest) (print-md-element a stream)))
 
 (defmethod print-md-tagged-element ((tag (eql :emph)) stream rest)
   (format stream "*")
-  (map nil (lambda (a) (print-md-element a stream)) rest)
+  (dolist (a rest) (print-md-element a stream))
   (format stream "*"))
 
 (defmethod print-md-tagged-element ((tag (eql :strong)) stream rest)
   (format stream "**")
-  (map nil (lambda (a) (print-md-element a stream)) rest)
+  (dolist (a rest) (print-md-element a stream))
   (format stream "**"))
 
 (defmethod print-md-tagged-element ((tag (eql :link)) stream rest)
   (format stream "<")
-  (map nil (lambda (a) (print-md-element a stream)) rest)
+  (dolist (a rest) (print-md-element a stream))
   (format stream ">"))
 
 (defmethod print-md-tagged-element ((tag (eql :mailto)) stream rest)
   (format stream "<")
-  (map nil (lambda (a)
-             (if (and (stringp a)
-                      (alexandria:starts-with-subseq "mailto:" a))
-                 (print-md-element (subseq a (length "mailto:")) stream)
-                 (print-md-element a stream)))
-       rest)
+  (dolist (a rest)
+    (if (and (stringp a)
+             (alexandria:starts-with-subseq "mailto:" a))
+        (print-md-element (subseq a (length "mailto:")) stream)
+        (print-md-element a stream)))
   (format stream ">"))
 
 (defmethod print-md-tagged-element ((tag (eql :explicit-link)) stream rest)
   (format stream "[")
-  (map nil (lambda (a) (print-md-element a stream)) (getf rest :label))
+  (dolist (a (getf rest :label)) (print-md-element a stream))
   (format stream "](~a~@[ ~s~])" (getf rest :source) (getf rest :title)))
 
 (defmethod print-md-tagged-element ((tag (eql :reference-link)) stream rest)
   (format stream "[")
-  (map nil (lambda (a) (print-md-element a stream)) (getf rest :label))
+  (dolist (a (getf rest :label)) (print-md-element a stream))
   (format stream "][~a]" (or (getf rest :definition) "")))
 
 (defmethod print-md-tagged-element ((tag (eql :image)) stream rest)
   (format stream "!")
-  (mapcar (lambda (a) (print-md-element a stream)) rest))
+  (dolist (a rest)
+    (print-md-element a stream)))
 
 (defmethod print-md-tagged-element ((tag (eql :counted-list)) stream rest)
   (let ((*md-list-item* 1))
-    (map nil (lambda (a) (print-md-element a stream)) rest)))
+    (dolist (a rest) (print-md-element a stream))))
 
 (defmethod print-md-tagged-element ((tag (eql :bullet-list)) stream rest)
   (let ((*md-list-item* "-"))
-    (map nil (lambda (a) (print-md-element a stream)) rest)))
+    (dolist (a rest) (print-md-element a stream))))
 
 (defmethod print-md-tagged-element ((tag (eql :list-item)) stream rest)
   (ensure-block stream)
@@ -116,7 +116,7 @@
          (format stream "~a " *md-list-item*)))
   (print-md-element (first rest) stream)
   (with-md-indent (4)
-    (map nil (lambda (a) (print-md-element a stream)) (rest rest)))
+    (dolist (a (rest rest)) (print-md-element a stream)))
   (end-block stream))
 
 (defmethod print-md-tagged-element ((tag (eql :line-break)) stream rest)
@@ -145,14 +145,14 @@
 (defmethod print-md-tagged-element ((tag (eql :verbatim)) stream rest)
   (with-md-indent (4)
     (ensure-block stream)
-    (map nil (lambda (a) (print-md a stream)) (butlast rest))
+    (dolist (a (butlast rest)) (print-md a stream))
     (print-md (remove-ending-newline (first (last rest))) stream)
     (end-block stream)))
 
 ;;; :UNESCAPED-STRING is not produced by the parser, but applications
 ;;; that manipulate the parse tree might find it convenient.
 (defmethod print-md-tagged-element ((tag (eql :unescaped-string)) stream rest)
-  (map nil (lambda (a) (print-md a stream)) rest))
+  (dolist (a rest) (print-md a stream)))
 
 (defun max-n-consecutive-char (char string)
   (let ((n 0)
@@ -178,7 +178,7 @@
   (let ((n (max-n-consecutive-backticks rest)))
     (loop repeat (1+ n) do (write-char #\` stream))
     (let ((*in-code* t))
-      (map nil (lambda (a) (print-md-element a stream)) rest))
+      (dolist (a rest) (print-md-element a stream)))
     (loop repeat (1+ n) do (write-char #\` stream))))
 
 (defmacro define-smart-quote-md-translation (name replacement)

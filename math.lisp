@@ -42,7 +42,7 @@
 
 #++
 (let ((3bmd-math:*math* t))
-  (esrap:parse 'inline "$$ \sum_{i=0}^{10} (u_{i} x_{i})^2 $$"))
+  (esrap:parse '%inline "$$ \sum_{i=0}^{10} (u_{i} x_{i})^2 $$"))
 
 #++(let ((3bmd-math:*math* t))
   (with-output-to-string (s)

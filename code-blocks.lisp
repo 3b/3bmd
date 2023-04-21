@@ -18,7 +18,8 @@
            #:*code-blocks-pre-class*
            #:*code-blocks-pre-class-format*
            #:*code-blocks-span-class*
-           #:*code-blocks-coloring-type-remap*))
+           #:*code-blocks-coloring-type-remap*
+           #:*colorize-name-map*))
 
 (in-package #:3bmd-code-blocks)
 
@@ -44,6 +45,9 @@
   (:documentation "Stop the code renderer")
   (:method (renderer) nil))
 
+(defparameter *renderer* :colorize
+  "Select rendering back-end. :colorize, :pygments, and :chroma are implemented by default.")
+
 (defun start-renderer ()
   (start-concrete-renderer *renderer*)
   (setf *renderer-started* t))
@@ -54,9 +58,6 @@
 
 (defun renderer-started-p ()
   (eq *renderer-started* t))
-
-(defparameter *renderer* :colorize
-  "Select rendering back-end. :colorize, :pygments, and :chroma are implemented by default.")
 
 ;; uiop:run-program searches PATH on at least some implementations,
 ;; may need to specify full path or pass :FORCE-SHELL T to

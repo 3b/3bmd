@@ -60,7 +60,7 @@
 (defrule ascii-character (ascii-char-p character))
 (defrule alphanumeric-ascii (ascii-char-p character))
 
-(defrule doc (and (* block) (* blank-line))
+(defrule doc (and (* %block) (* blank-line))
   (:destructure (content blanks)
                 (declare (ignore blanks))
                 content))
@@ -78,10 +78,10 @@
                                 #++ style-block
                                 paragraph
                                 plain)
-    "internal hook for extending 'block' grammar, don't modify directly"))
+    "internal hook for extending '%block' grammar, don't modify directly"))
 
-(defrule block (and (* blank-line)
-                    #.(cons 'or %block-rules%))
+(defrule %block (and (* blank-line)
+                       #.(cons 'or %block-rules%))
   (:destructure (blank block)
                 (declare (ignore blank))
                 block))
@@ -94,11 +94,11 @@
   ;; so switching back to full parse
   #++(loop
      for start = 0 then pos
-     for (block pos) = (multiple-value-list (parse 'block a
+     for (%block pos) = (multiple-value-list (parse '%block a
                                                    :start start
                                                    :junk-allowed t))
-     while block
-     collect block
+     while %block
+     collect %block
      while pos))
 
 (defrule line raw-line
@@ -192,7 +192,7 @@
   (:lambda (a)
     (list :heading :level (length a))))
 
-(defrule atx-inline (and (! newline) (! (and sp (* #\#) sp newline)) inline)
+(defrule atx-inline (and (! newline) (! (and sp (* #\#) sp newline)) %inline)
   (:destructure (n s inline)
                 (declare (ignore n s))
                 inline))
@@ -203,19 +203,19 @@
 (defrule setext-bottom-2 (and "---" (* #\-) newline))
 
 (defrule setext-heading-1 (and (& (and raw-line setext-bottom-1))
-                               (+ (and (! endline) inline))
+                               (+ (and (! endline) %inline))
                                sp newline
                                setext-bottom-1)
-  (:destructure (& content s nl line)
-                (declare (ignore & s nl line))
+  (:destructure (part-& content s nl line)
+                (declare (ignore part-& s nl line))
                 (list :heading :level 1 :contents (mapcar 'second content))))
 
 (defrule setext-heading-2 (and (& (and raw-line setext-bottom-2))
-                               (+ (and (! endline) inline))
+                               (+ (and (! endline) %inline))
                                sp newline
                                setext-bottom-2)
-  (:destructure (& content s nl line)
-                (declare (ignore & s nl line))
+  (:destructure (part-& content s nl line)
+                (declare (ignore part-& s nl line))
                 (list :heading :level 2 :contents (mapcar 'second content))))
 
 
@@ -223,14 +223,18 @@
                      (or #\+ #\* #\-)
                      (+ space-char))
   (:constant :bullet-list))
+
 (defrule bullet-list (and (& bullet) (or list-tight list-loose))
   (:destructure (a b)
+                (declare (ignore a))
                 (cons :bullet-list b)))
 
 (defrule enumerator (and nonindent-space (+ dec-digit) #\. (+ space-char))
   (:constant :counted-list))
+
 (defrule ordered-list (and (& enumerator) (or list-tight list-loose))
   (:destructure (a b)
+                (declare (ignore a))
                 (cons :counted-list b)))
 
 
@@ -243,6 +247,7 @@
 
 (defrule list-item-tight (and (or bullet enumerator)
                               list-block
+                              ;; (* list-continuation-block)
                               (* (and (! blank-line)
                                       list-continuation-block))
                               (! list-continuation-block))
@@ -298,7 +303,8 @@
 
 
 
-(defrule html-block (and (or html-block-in-tags html-comment
+(defrule html-block (and (or html-block-in-tags
+                             html-comment
                              html-processing-instruction
                              html-block-self-closing
                              html-block-non-closing)
@@ -416,8 +422,8 @@
                 (declare (ignore space blank))
                 (cons :paragraph paragraph)))
 
-(defrule inlines (and (+ (or (and (! endline) inline)
-                             (and endline (& inline))))
+(defrule inlines (and (+ (or (and (! endline) %inline)
+                             (and endline (& %inline))))
                      (? endline))
   (:destructure (i e)
                 (declare (ignore e))
@@ -431,7 +437,7 @@
   (defparameter %inline-rules% '(string
                                  endline
                                  ul-or-star-line
-                                 space
+                                 %space
                                  strong
                                  emph
                                  image
@@ -443,11 +449,11 @@
                                  entity
                                  escaped-character
                                  #++ smart
-                                 symbol)
-    "internal hook for extending 'inline' grammar, don't modify directly"))
+                                 %symbol)
+    "internal hook for extending '%inline' grammar, don't modify directly"))
 
 
-(defrule inline #. (cons 'or %inline-rules%))
+(defrule %inline #. (cons 'or %inline-rules%))
 
 (defrule maybe-alphanumeric (& alphanumeric)
   (:constant ""))
@@ -458,30 +464,32 @@
   (:constant ""))
 (defrule ul-or-star-line (or ul-line star-line)
   (:text t))
-(defrule star-line (or (and "****" (* #\*)) (and space-char (+ #\*) maybe-space-char)))
-(defrule ul-line (or (and "____" (* #\_)) (and space-char (+ #\_) maybe-space-char)))
+(defrule star-line (or (and "****" (* #\*))
+                       (and space-char (+ #\*) maybe-space-char)))
+(defrule ul-line (or (and "____" (* #\_))
+                     (and space-char (+ #\_) maybe-space-char)))
 
-(defrule space (+ space-char)
+(defrule %space (+ space-char)
   (:text t))
 
 (defrule strong (or strong-star strong-ul)
   (:destructure (&rest a)
                 (cons :strong a)))
 (defrule **-open (and (! star-line) "**" (! space-char) (! newline)))
-(defrule **-close (and (! space-char) (! newline) inline (! star-line) "**" )
+(defrule **-close (and (! space-char) (! newline) %inline (! star-line) "**" )
   (:destructure (s n inline s2 *s)
                 (declare (ignore s n s2 *s))
                 inline))
-(defrule strong-star (and **-open (* (and (! **-close) inline)) **-close)
+(defrule strong-star (and **-open (* (and (! **-close) %inline)) **-close)
   (:destructure (o (&rest i) e)
                 (declare (ignore o))
                 (append (mapcar 'second i) (list e))))
 (defrule __-open (and (! star-line) "__" (! space-char) (! newline)))
-(defrule __-close (and (! space-char) (! newline) inline (! star-line) "__" )
+(defrule __-close (and (! space-char) (! newline) %inline (! star-line) "__" )
   (:destructure (s n inline s2 _s)
                 (declare (ignore s n s2 _s))
                 inline))
-(defrule strong-ul (and __-open (* (and (! __-close) inline)) __-close)
+(defrule strong-ul (and __-open (* (and (! __-close) %inline)) __-close)
   (:destructure (o (&rest i) e)
                 (declare (ignore o))
                 (append (mapcar 'second i) (list e))))
@@ -490,20 +498,20 @@
   (:destructure (&rest a)
                 (cons :emph a)))
 (defrule *-open (and (! star-line) "*" (! space-char) (! newline)))
-(defrule *-close (and (! space-char) (! newline) inline (! star-line) "*" )
+(defrule *-close (and (! space-char) (! newline) %inline (! star-line) "*" )
   (:destructure (s n inline s2 *s)
                 (declare (ignore s n s2 *s))
                 inline))
-(defrule emph-star (and *-open (* (and (! *-close) inline)) *-close)
+(defrule emph-star (and *-open (* (and (! *-close) %inline)) *-close)
   (:destructure (o (&rest i) e)
                 (declare (ignore o))
                 (append (mapcar 'second i) (list e))))
 (defrule _-open (and (! star-line) "_" (! space-char) (! newline)))
-(defrule _-close (and (! space-char) (! newline) inline (! star-line) "_" )
+(defrule _-close (and (! space-char) (! newline) %inline (! star-line) "_" )
   (:destructure (s n inline s2 _s)
                 (declare (ignore s n s2 _s))
                 inline))
-(defrule emph-ul (and _-open (* (and (! _-close) inline)) _-close)
+(defrule emph-ul (and _-open (* (and (! _-close) %inline)) _-close)
   (:destructure (o (&rest i) e)
                 (declare (ignore o))
                 (append (mapcar 'second i) (list e))))
@@ -550,7 +558,7 @@
                 (declare (ignore < >))
                 (list :mailto (text "mailto:" url1 url2 url3))))
 
-(defrule label (and #\[ (* (and (! #\[) (! #\]) inline)) #\])
+(defrule label (and #\[ (* (and (! #\[) (! #\]) %inline)) #\])
   (:destructure ([ label ])
                 (declare (ignore [ ]))
                 (mapcar 'third label)))
@@ -604,7 +612,9 @@
     (list :code a)))
 
 
-(defrule raw-html (or html-comment html-processing-instruction html-tag)
+(defrule raw-html (or html-comment
+                      html-processing-instruction
+                      html-tag)
   (:lambda (a)
     (list :raw-html a)))
 (defrule html-comment (and "<!--" (* (and (! "-->") character)) "-->")
@@ -644,4 +654,4 @@
                 (declare (ignore \\ n))
                 c))
 
-(defrule symbol special-char)
+(defrule %symbol special-char)
