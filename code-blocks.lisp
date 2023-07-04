@@ -294,8 +294,12 @@
 
 (defmethod print-md-tagged-element ((tag (eql 'code-block)) stream rest)
   (3bmd::ensure-block stream)
-  (format stream "```~a~@[|~a~]~%~a~%```"
-          (getf rest :lang) (getf rest :params) (getf rest :content))
+  ;; container already indented first line
+  (format stream "```~a~@[|~a~]~%" (getf rest :lang) (getf rest :params))
+  ;; indent and use print-md to make sure contents are indented properly
+  (3bmd::md-indent stream)
+  (3bmd::print-md (getf rest :content) stream)
+  (3bmd::print-md (format nil "~%```") stream)
   (3bmd::end-block stream))
 
 ;;; fixme: add hooks to do this properly, so multiple extensions don't conflict
