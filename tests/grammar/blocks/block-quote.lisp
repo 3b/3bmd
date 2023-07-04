@@ -57,3 +57,46 @@ Just a paragraph"
               ;; Problem 3: Paragraph at the end of the document is not recognized.
               (:PLAIN "Just" " " "a" " " "paragraph")))
 
+(def-grammar-test formatted-quote
+  :rule 3bmd-grammar::doc
+  :text "> *a*
+> > ---"
+  :expected '((:BLOCK-QUOTE (:PARAGRAPH (:EMPH "a"))
+               (:BLOCK-QUOTE (:HORIZONTAL-RULE)))))
+
+(def-grammar-test formatted-quote-2
+  :rule 3bmd-grammar::doc
+  :text "- 1
+    > *a*
+    > > ---"
+  :expected '((:BULLET-LIST
+               (:LIST-ITEM (:PARAGRAPH "1")
+                (:BLOCK-QUOTE
+                 (:PARAGRAPH (:EMPH "a"))
+                 (:BLOCK-QUOTE
+                  (:HORIZONTAL-RULE)))))))
+
+
+(def-grammar-test nested-block-quote
+  :rule 3bmd-grammar::doc
+  :text  "- 1
+    > 2 3
+    >
+    > - 4
+    >     > 5 6
+    >     > 7 8
+    > 9
+ "
+  :expected '((:BULLET-LIST
+               (:LIST-ITEM (:PARAGRAPH "1")
+                (:BLOCK-QUOTE (:PARAGRAPH "2" " " "3")
+                 (:BULLET-LIST
+                  (:LIST-ITEM (:PARAGRAPH "4")
+                   ;; markdown and commonmark seem to agree that the 9
+                   ;; is part of the inner quote
+                   (:BLOCK-QUOTE
+                    (:PARAGRAPH "5" " " "6" "
+"
+                                "7" " " "8" "
+"
+                                "9")))))))))

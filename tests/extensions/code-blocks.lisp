@@ -11,7 +11,7 @@
   :text "```language
 code \"*_`[]{}```
  *1*
-  2
+>  2
    3
     4
      5
@@ -20,7 +20,7 @@ code \"*_`[]{}```
   :expected '(3BMD-CODE-BLOCKS::CODE-BLOCK :LANG
                           "language" :PARAMS NIL :CONTENT "code \"*_`[]{}```
  *1*
-  2
+>  2
    3
     4
      5"))
@@ -80,3 +80,32 @@ code \"*_`[]{}```
     ```
 ")
 
+(def-print-test print-code-block-indented-2
+  :enable-extensions 3bmd-code-blocks:*code-blocks*
+  :format :markdown
+  :text "
+- xxx
+
+    - yyy
+        > ```language
+        > code \"*_`[]{}```
+        > > 1
+        > >  2
+        >    3
+        >     4
+        >      5
+        > ```
+"
+  :expected "- xxx
+
+    - yyy
+
+        > ```language
+        > code \"*_`[]{}```
+        > > 1
+        > >  2
+        >    3
+        >     4
+        >      5
+        > ```
+")
