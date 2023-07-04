@@ -29,6 +29,9 @@
                                                          (:file "entity")
                                                          (:file "escaped-char")
                                                          (:file "ul-or-star")))))
+                             (:module "printing"
+                              :components ((:file "inline")
+                                           (:file "block")))
                              (:module "extensions"
                               :components ((:file "smart-quotes"))))))
   :perform (test-op (op c)
