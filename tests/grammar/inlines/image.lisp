@@ -70,7 +70,7 @@
   :expected '(:IMAGE
               (:REFERENCE-LINK
                :LABEL ("A" " " "Label")
-               :DEFINITION "reference")))
+               :DEFINITION ("reference"))))
 
 (def-grammar-test reference-image-test-2
   :rule 3bmd-grammar::image
@@ -81,7 +81,7 @@
   :expected '(:IMAGE
               (:REFERENCE-LINK
                :LABEL ("A" " " "Label")
-               :DEFINITION "reference")))
+               :DEFINITION ("reference"))))
 
 (def-grammar-test reference-image-test-3
   :rule 3bmd-grammar::image

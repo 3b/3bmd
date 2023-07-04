@@ -528,8 +528,9 @@
 (defrule reference-link-double (and label spnl (! "[]") label)
   (:destructure (link i1 i2 definition)
                 (declare (ignore i1 i2))
-                (list :reference-link :label link
-                      :definition (text definition))))
+                (list :reference-link
+                      :label link
+                      :definition definition)))
 (defrule reference-link-single (and label (? (and spnl "[]")))
   (:destructure (label tail)
                 (let ((tail (text tail)))

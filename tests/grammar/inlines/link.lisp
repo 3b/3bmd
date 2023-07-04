@@ -55,3 +55,15 @@
                ((:REFERENCE-LINK :LABEL ("link") :TAIL NIL)))
               (:REFERENCE :LABEL ("link") :SOURCE "http://example.com/"
                           :TITLE "title")))
+
+(def-grammar-test reference-link-test-formatted-1 ;; bug #55
+  :text "[l][*x*]"
+  :expected '((:PLAIN
+               (:REFERENCE-LINK :LABEL ("l")
+                                :DEFINITION ((:EMPH "x"))))))
+
+(def-grammar-test reference-link-test-formatted-2
+  :text "[*l*][]"
+  :expected '((:PLAIN
+               (:REFERENCE-LINK :LABEL ((:EMPH "l"))
+                                :TAIL "[]"))))
