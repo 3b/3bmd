@@ -106,3 +106,8 @@ jobs:
       uses: 40ants/run-tests@v2
       with:
         asdf-system: 3bmd-ext-definition-lists
+
+    - name: test code-blocks extension
+      uses: 40ants/run-tests@v2
+      with:
+        asdf-system: 3bmd-ext-code-blocks
