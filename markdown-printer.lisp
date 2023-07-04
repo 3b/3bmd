@@ -1,16 +1,22 @@
 (in-package #:3bmd)
 
-(defvar *md-indent*)
+(defvar *md-prefix*)
 (defvar *md-list-item*)
 (defvar *md-in-block*)
 (defvar *md-block-seen-p*)
 
 (defmacro with-md-indent ((indent) &body body)
-  `(let ((*md-indent* (+ *md-indent* ,indent)))
+  `(let ((*md-prefix* (concatenate 'string *md-prefix*
+                                   (make-string ,indent
+                                                :initial-element #\space))))
+     ,@body))
+
+(defmacro with-md-prefix ((prefix) &body body)
+  `(let ((*md-prefix* (concatenate 'string *md-prefix* ,prefix)))
      ,@body))
 
 (defun md-indent (stream)
-  (loop repeat *md-indent* do (write-char #\Space stream)))
+  (write-string *md-prefix* stream))
 
 (defun ensure-block (stream)
   (unless *md-in-block*
@@ -40,7 +46,6 @@
              (md-indent stream))))
 
 (defmethod print-md-tagged-element ((tag (eql :heading)) stream rest)
-  (setq *md-indent* 0)
   (ensure-block stream)
   (loop repeat (getf rest :level) do (write-char #\# stream))
   (write-char #\Space stream)
@@ -53,8 +58,9 @@
   (end-block stream))
 
 (defmethod print-md-tagged-element ((tag (eql :block-quote)) stream rest)
-  (with-md-indent (4)
-    (dolist (a rest) (print-md-element a stream))))
+  (with-md-prefix ("> ")
+    (dolist (a rest)
+      (print-md-element a stream))))
 
 (defmethod print-md-tagged-element ((tag (eql :plain)) stream rest)
   (ensure-block stream)
@@ -215,7 +221,7 @@
 (defmethod print-doc-to-stream-using-format (doc stream
                                              (format (eql :markdown)))
   (let ((*references* (extract-refs doc))
-        (*md-indent* 0)
+        (*md-prefix* "")
         (*md-in-block* nil)
         (*md-block-seen-p* nil))
     (dolist (element doc)
