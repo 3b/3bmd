@@ -11,7 +11,7 @@
   :text "[something][non-existent]"
   :expected "[something][non-existent]
 "
-  :warn "Unresolvable reference link (:LABEL (\"something\") :DEFINITION \"non-existent\")
+  :warn "Unresolvable reference link (:LABEL (\"something\") :DEFINITION (\"non-existent\"))
 ")
 
 (def-print-test print-missing-reference-link-2
@@ -28,6 +28,56 @@
   :warn "Unresolvable reference link (:LABEL (\"non-existent\") :TAIL \"[]\")
 ")
 
+(def-print-test print-missing-reference-link-4
+  :text "[*non-existent*]"
+  :expected "[<em>non-existent</em>]
+"
+  :warn "Unresolvable reference link (:LABEL ((:EMPH \"non-existent\")) :TAIL NIL)
+")
+
+(def-print-test print-missing-reference-link-5
+  :text "[*non-existent*][]"
+  :expected "[<em>non-existent</em>][]
+"
+  :warn "Unresolvable reference link (:LABEL ((:EMPH \"non-existent\")) :TAIL \"[]\")
+")
+
+(def-print-test print-missing-reference-link-5
+  :text "[a][*non-existent*]"
+  :expected "[a][<em>non-existent</em>]
+"
+  :warn "Unresolvable reference link (:LABEL (\"a\") :DEFINITION ((:EMPH \"non-existent\")))
+")
+
+(def-print-test print-formatted-reference-link-1
+  :text "[*l*][*b*]
+
+[*b*]: foo"
+  :expected "<p><a href=\"foo\" ><em>l</em></a></p>
+")
+
+(def-print-test print-formatted-reference-link-2
+  :text "[*l*][`b`]
+
+[`b`]: foo"
+  :expected "<p><a href=\"foo\" ><em>l</em></a></p>
+")
+
+(def-print-test print-formatted-reference-link-3
+  :format :markdown
+  :text "[*l*][`b`]
+[`b`][]
+[*a*][*b*]
+[*c*][]
+
+[`b`]: foo"
+  :expected "[*l*][`b`]
+[`b`][]
+[*a*][*b*]
+[*c*][]
+
+[`b`]: foo
+")
 
 (def-print-test highlight-code-span-1
   :enable-extensions 3bmd-code-blocks:*code-blocks*

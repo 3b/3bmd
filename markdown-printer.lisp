@@ -98,7 +98,9 @@
 (defmethod print-md-tagged-element ((tag (eql :reference-link)) stream rest)
   (format stream "[")
   (dolist (a (getf rest :label)) (print-md-element a stream))
-  (format stream "][~a]" (or (getf rest :definition) "")))
+  (format stream "][")
+  (dolist (a (getf rest :definition)) (print-md-element a stream))
+  (format stream "]"))
 
 (defmethod print-md-tagged-element ((tag (eql :image)) stream rest)
   (format stream "!")
@@ -204,7 +206,9 @@
 (define-smart-quote-md-translation :ellipsis "...")
 
 (defmethod print-md-tagged-element ((tag (eql :reference)) stream rest)
-  (format stream "~%[~a]: ~a ~@[~s~]~%" (first (getf rest :label))
+  (format stream "~%[")
+  (dolist (a (getf rest :label)) (print-md-element a stream))
+  (format stream "]: ~a~@[ ~s~]~%"
           (getf rest :source) (getf rest :title)))
 
 (defmethod print-md-element ((elem (eql :apostrophe)) stream)

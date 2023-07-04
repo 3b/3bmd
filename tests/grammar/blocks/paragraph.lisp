@@ -53,5 +53,5 @@ Next [paragraph][ref].
               (:PLAIN
                "Next"
                " "
-               (:REFERENCE-LINK :LABEL ("paragraph") :DEFINITION "ref")
+               (:REFERENCE-LINK :LABEL ("paragraph") :DEFINITION ("ref"))
                ".")))

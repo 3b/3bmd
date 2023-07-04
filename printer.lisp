@@ -164,9 +164,13 @@
        (format stream "[")
        (dolist (a label)
          (print-element a stream))
-       (format stream "]~@[[~a]~]~@[~a~]"
-               (getf rest :definition)
-               (getf rest :tail))))))
+       (format stream "]")
+       (when (getf rest :definition)
+         (format stream "[")
+         (dolist (a (getf rest :definition))
+           (print-element a stream))
+         (format stream "]"))
+       (format stream "~@[~a~]" (getf rest :tail))))))
 
 (defmethod print-tagged-element ((tag (eql :image)) stream rest)
   (setf rest (cdr (first rest)))
