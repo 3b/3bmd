@@ -16,14 +16,15 @@
      ,@body))
 
 (defun md-indent (stream)
-  (write-string *md-prefix* stream))
+  (write-string *md-prefix* stream)
+  (setq *md-in-block* :right-after-indent))
 
 (defun ensure-block (stream)
   (unless *md-in-block*
     (when *md-block-seen-p*
       (format stream "~%"))
-    (md-indent stream)
     (setq *md-in-block* t)
+    (md-indent stream)
     (setq *md-block-seen-p* t)))
 
 (defun end-block (stream)
@@ -31,10 +32,19 @@
     (format stream "~%")
     (setq *md-in-block* nil)))
 
+(defparameter *inline-chars-to-escape* "*_`[]{}")
+(defparameter *block-chars-to-escape* "*_`[]{}#")
+
 (defun print-md-escaped (string stream)
   (loop for char across string
-        do (when (and (not *in-code*) (find char "*_`[]{}"))
+        do (when (and (not *in-code*)
+                      (find char
+                            (if (eq *md-in-block* :right-after-indent)
+                                *block-chars-to-escape*
+                                *inline-chars-to-escape*)))
              (write-char #\\ stream))
+           (when (eq *md-in-block* :right-after-indent)
+             (setq *md-in-block* t))
            (write-char char stream)
            (when (char= char #\Newline)
              (md-indent stream))))
@@ -42,6 +52,8 @@
 (defun print-md (string stream)
   (loop for char across string
         do (write-char char stream)
+           (when (eq *md-in-block* :right-after-indent)
+             (setq *md-in-block* t))
            (when (char= char #\Newline)
              (md-indent stream))))
 
