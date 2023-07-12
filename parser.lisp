@@ -182,7 +182,7 @@
 
 (defrule atx-heading (and atx-start sp (+ atx-inline)
                           (? (and sp (* #\#) sp))
-                          newline)
+                          (or newline eof))
   (:destructure (start s contents s2 nl)
                 (declare (ignore s s2 nl))
                 (append start (list :contents contents))))
