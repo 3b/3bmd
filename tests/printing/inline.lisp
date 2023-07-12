@@ -152,3 +152,9 @@
   :expected "<pre><code>\\# heading
 </code></pre>
 ")
+
+(def-print-test print-curly-brackets
+  :text "\\inlinelatexormathjax{arg}
+"
+  :expected "\\inlinelatexormathjax{arg}
+")
