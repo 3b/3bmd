@@ -87,3 +87,14 @@
               ;; And this bullet list should not be generated.
               ;; The Bar list item should be inside the first bullet list.
               (:BULLET-LIST (:LIST-ITEM (:PLAIN "Bar")))))
+
+
+(def-grammar-test parse-list-with-carriage-return
+  :text "* xy
+
+    Not verbatim
+"
+  :expected '((:BULLET-LIST
+               (:LIST-ITEM
+                (:PARAGRAPH "xy")
+                (:PARAGRAPH "Not" " " "verbatim")))))
