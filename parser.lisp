@@ -103,7 +103,7 @@
 
 (defrule line raw-line
   (:text t))
-(defrule raw-line (or (and (* (and (! #\newline) (! #\return) character))
+(defrule raw-line (or (and (* (and (! newline) character))
                            newline)
                       (and (+ character) eof)))
 (defrule optionally-indented-line (and (? indent) line)
