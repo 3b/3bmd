@@ -42,7 +42,7 @@
   :warn "Unresolvable reference link (:LABEL ((:EMPH \"non-existent\")) :TAIL \"[]\")
 ")
 
-(def-print-test print-missing-reference-link-5
+(def-print-test print-missing-reference-link-6
   :text "[a][*non-existent*]"
   :expected "[a][<em>non-existent</em>]
 "
