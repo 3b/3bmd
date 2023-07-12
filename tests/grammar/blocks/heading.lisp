@@ -96,3 +96,7 @@ World!
 "
   :known-failure t
   :expected '(:PLAIN "#Hello" " " "Lisp" " " "World" "!"))
+
+(def-grammar-test atx-heading-eof-test
+  :text "# heading"
+  :expected '((:HEADING :LEVEL 1 :CONTENTS ("heading"))))
