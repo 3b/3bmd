@@ -32,8 +32,8 @@
     (format stream "~%")
     (setq *md-in-block* nil)))
 
-(defparameter *inline-chars-to-escape* "*_`[]{}")
-(defparameter *block-chars-to-escape* "*_`[]{}#")
+(defparameter *inline-chars-to-escape* "*_`[]")
+(defparameter *block-chars-to-escape* "*_`[]#")
 
 (defun print-md-escaped (string stream)
   (loop for char across string
