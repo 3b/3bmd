@@ -102,3 +102,53 @@
 [link]: http://example.com/ \"title\""
   :expected '"<h3><a href=\"http://example.com/\" title=\"title\">link</a></h3>
 ")
+
+(def-print-test print-heading-1
+  :text "# heading
+"
+  :expected "<h1>heading</h1>
+")
+
+(def-print-test print-heading-2
+  :text "\\# heading
+"
+  :expected "# heading
+")
+
+(def-print-test print-heading-3
+  :text " # heading
+"
+  :expected " # heading
+")
+
+(def-print-test print-heading-4
+  :text " \\# heading
+"
+  :expected " # heading
+")
+
+(def-print-test print-heading-5
+  :text "`# heading`
+"
+  :expected "<code># heading</code>
+")
+
+(def-print-test print-heading-6
+  :text "`\\# heading`
+"
+  :expected "<code>\\# heading</code>
+")
+
+(def-print-test print-heading-7
+  :text "    # heading
+"
+  :expected "<pre><code># heading
+</code></pre>
+")
+
+(def-print-test print-heading-8
+  :text "    \\# heading
+"
+  :expected "<pre><code>\\# heading
+</code></pre>
+")
