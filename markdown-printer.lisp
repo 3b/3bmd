@@ -32,8 +32,11 @@
     (format stream "~%")
     (setq *md-in-block* nil)))
 
-(defparameter *inline-chars-to-escape* "*_`[]")
-(defparameter *block-chars-to-escape* "*_`[]#")
+;;; These are some of the 3BMD-GRAMMAR::SPECIAL-CHARs. The ! character
+;;; is not necessary to escape if [ is. Similary, no need to escape >
+;;; if < is. Backslash should never be escaped.
+(defparameter *block-chars-to-escape* "*_`&[]<#")
+(defparameter *inline-chars-to-escape* (remove #\# *block-chars-to-escape*))
 
 (defun print-md-escaped (string stream)
   (loop for char across string
@@ -42,6 +45,10 @@
                             (if (eq *md-in-block* :right-after-indent)
                                 *block-chars-to-escape*
                                 *inline-chars-to-escape*)))
+             ;; TODO: The escaping is overeager. For example, there is
+             ;; no need for the escapes in "\\<->" and "\\&KEY " due
+             ;; to how the parser works, but this needs information
+             ;; about what follows STRING in the parse tree.
              (write-char #\\ stream))
            (when (eq *md-in-block* :right-after-indent)
              (setq *md-in-block* t))

@@ -149,9 +149,14 @@ plain
     para [ref-link][sfd] ![image](#dsfa \"img\") ![img][32]
     sddsf <a href=\"#xxx\">ddd</a> <!-- comment -->
 
-em-dash -- en-dash --- lrsa <-> <- -> <=> <= => ... foo's
+em-dash -- en-dash --- lrsa \\<-> \\<- -> \\<=> \\<= => ... foo's
 
 [id1]: http://some.link.com/ \"with some title\"
 
 plain"
 )
+
+(def-print-test print-escaped-brackets
+  :format :markdown
+  :text     "[\\[x\\]](#y)"
+  :expected "[\\[x\\]](#y)")
