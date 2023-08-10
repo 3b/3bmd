@@ -89,6 +89,10 @@
               (:BULLET-LIST (:LIST-ITEM (:PLAIN "Bar")))))
 
 
+;;; CLISP treats the return character as a line ending regardless of
+;;; the platform
+;;; (https://clisp.sourceforge.io/impnotes/clhs-newline.html).
+#-(or clisp windows)
 (def-grammar-test parse-list-with-carriage-return
   :text "* xy
 
