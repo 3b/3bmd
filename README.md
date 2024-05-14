@@ -12,7 +12,7 @@ todo:
 * optimize esrap
 
 [markdown]: http://daringfireball.net/projects/markdown/
-[esrap]: https://github.com/nikodemus/esrap
+[esrap]: https://github.com/scymtym/esrap
 [peg-markdown]: https://github.com/jgm/peg-markdown
 [peg/leg]: http://piumarta.com/software/peg/peg.1.html
 [CommonMark]: https://commonmark.org/
