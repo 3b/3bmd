@@ -2,26 +2,36 @@
 ; Support math markup using libraries like MathJax
 ; Author: Lukasz Janyst <lukasz@jany.st>
 ;
-; Works both with inline math:
+; Works with inline math:
 ;
-; Begining of the paragraph $$ \sum_{i=0}^{10} (u_{i} x_{i})^2 $$ blah blah
+;     $x_0$
+;     $`x_0`$
+;     $$x_0$$ text
 ;
-; and with blocks:
+; and block (display) math:
 ;
-; $$
-; \sum_{i=0}^{10} (u_{i} x_{i})^2
-; $$
+;     $$x_0$$
 ;
-; Note that this departs from normal TeX syntax, which uses a single $
-; for inline math, and double for display math. By using double $, the
-; need for escaping $ is much less. Also, although it's not
-; documented, GitHub Flavored Markdown supports $$-delimited _inline_
-; math, too.
+; - To avoid rendering "between $5 and $6" with inline math, both the
+;   opening and the closing $ character must be followed / preceded by
+;   a non-space character. This agrees with Pandoc. The other forms do
+;   not have such restriction.
+;
+; - In the block format, the opening $$ can only be preceded by
+;   spaces, and the closing $$ can only be followed by spaces on its
+;   own line.
+;
+; TODO:
+;
+; - Escaping within math (of e.g. $ characters) is not implemented.
 ;
 ;-------------------------------------------------------------------------------
 
 (defpackage #:3bmd-math
   (:use #:cl #:esrap #:3bmd-ext)
+  (:import-from #:3bmd #:ensure-block #:end-block #:print-md)
+  (:import-from #:3bmd-grammar #:eof #:escaped-character #:newline
+                #:sp #:space-char)
   (:export #:*math*
            #:*html-inline-start-marker*
            #:*html-inline-end-marker*
@@ -35,22 +45,59 @@
 (defvar *html-block-start-marker* "\\[")
 (defvar *html-block-end-marker* "\\]")
 
-(defrule math-content (* (and (! "$$") character))
-  (:text t))
-
-(define-extension-inline *math* math-inline
-    (and "$$" math-content "$$")
+(define-extension-inline *math* math-inline-1
+    (and "$" inline-math-content-1 "$")
+  (:character-rule math-extended-chars #\$)
+  (:escape-char-rule math-escaped-characters #\$)
+  (:md-chars-to-escape #\$)
+  (:after escaped-character)
   (:destructure (s c e)
                 (declare (ignore s e))
-                (list :math-inline c)))
+                (list :math-inline-1 c)))
+
+(defrule inline-math-content-1
+    (and (! space-char)
+         (* (and (* (and (! space-char) (! "$") character))
+                 space-char))
+         (+ (and (! (or space-char "$")) character)))
+  (:text t))
+
+(define-extension-inline *math* math-inline-2
+    (and "$`" inline-math-content-2 "`$")
+  (:destructure (s c e)
+                (declare (ignore s e))
+                (list :math-inline-2 c)))
+
+(defrule inline-math-content-2 (* (and (! "`$") character))
+  (:text t))
+
+(define-extension-inline *math* math-inline-3
+    (and "$$" inline-math-content-3 "$$")
+  (:destructure (s c e)
+                (declare (ignore s e))
+                (list :math-inline-3 c)))
+
+(defrule inline-math-content-3 (* (and (! "$$") character))
+  (:text t))
 
 (define-extension-block *math* math-block
-    (and "$$" math-content "$$")
-    (:destructure (s c e)
-                (declare (ignore s e))
+    (and "$$" block-math-content "$$" sp (or newline eof))
+    (:destructure (s c e sp l)
+                (declare (ignore s e sp l))
                 (list :math-block c)))
 
-(defmethod print-tagged-element ((tag (eql :math-inline)) stream rest)
+(defrule block-math-content (* (and (! "$$") character))
+  (:text t))
+
+(defmethod print-tagged-element ((tag (eql :math-inline-1)) stream rest)
+  (format stream "~a~a~a" *html-inline-start-marker* (car rest)
+          *html-inline-end-marker*))
+
+(defmethod print-tagged-element ((tag (eql :math-inline-2)) stream rest)
+  (format stream "~a~a~a" *html-inline-start-marker* (car rest)
+          *html-inline-end-marker*))
+
+(defmethod print-tagged-element ((tag (eql :math-inline-3)) stream rest)
   (format stream "~a~a~a" *html-inline-start-marker* (car rest)
           *html-inline-end-marker*))
 
@@ -58,22 +105,16 @@
   (format stream "~a~a~a" *html-block-start-marker* (car rest)
           *html-block-end-marker*))
 
-(defmethod print-md-tagged-element ((tag (eql :math-inline)) stream rest)
+(defmethod print-md-tagged-element ((tag (eql :math-inline-1)) stream rest)
+  (format stream "$~a$" (car rest)))
+
+(defmethod print-md-tagged-element ((tag (eql :math-inline-2)) stream rest)
+  (format stream "$`~a`$" (car rest)))
+
+(defmethod print-md-tagged-element ((tag (eql :math-inline-3)) stream rest)
   (format stream "$$~a$$" (car rest)))
 
 (defmethod print-md-tagged-element ((tag (eql :math-block)) stream rest)
-  (3bmd::ensure-block stream)
-  (3bmd::print-md (format nil "$$~a$$" (car rest)) stream)
-  (3bmd::end-block stream))
-
-#++
-(let ((3bmd-math:*math* t))
-  (esrap:parse '%inline "$$ \sum_{i=0}^{10} (u_{i} x_{i})^2 $$"))
-
-#++(let ((3bmd-math:*math* t))
-  (with-output-to-string (s)
-    (3bmd:parse-string-and-print-to-stream "test $$ \sum_{i=0}^{10} (u_{i} x_{i})^2 $$ test" s)))
-
-#++(let ((3bmd-math:*math* t))
-  (with-output-to-string (s)
-    (3bmd:parse-string-and-print-to-stream "$$ \sum_{i=0}^{10} (u_{i} x_{i})^2 $$" s)))
+  (ensure-block stream)
+  (print-md (format nil "$$~a$$" (car rest)) stream)
+  (end-block stream))

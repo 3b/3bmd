@@ -41,9 +41,11 @@
               (push new (cdr (nthcdr (1- min) list)))
               list)))))
 
-(defun %make-definer (extension-flag name expression options var rule exp)
+(defun %make-definer (extension-flag name expression options var rule exp
+                      extension-to-md-chars-to-escape)
   (let ((characters (cdr (assoc :character-rule options)))
         (escapes (cdr (assoc :escape-char-rule options)))
+        (md-chars-to-escapes (cdr (assoc :md-chars-to-escape options)))
         (after (cdr (assoc :after options)))
         (before (cdr (assoc :before options))))
     `(progn
@@ -76,6 +78,7 @@
          ,@(remove-if (lambda (a)
                         (member (car a) '(:character-rule
                                           :escape-char-rule
+                                          :md-chars-to-escape
                                           :after :before)))
                       options))
        (setf ,var
@@ -83,13 +86,28 @@
                                      ,var
                                      ,@(when before `(:before ',before))
                                      ,@(when after `(:after ',after)) ))
-       (esrap:change-rule ',rule ,exp))))
+       (esrap:change-rule ',rule ,exp)
+       (add-to-extension-to-md-chars-to-escape ,extension-to-md-chars-to-escape
+                                               ',extension-flag
+                                               ',md-chars-to-escapes))))
 
 (defmacro define-extension-inline (extension-flag name expression &body options)
   (%make-definer extension-flag name expression options '%inline-rules%
-                 '%inline '(cons 'or %inline-rules%)))
+                 '%inline '(cons 'or %inline-rules%)
+                 '3bmd::*extension-to-md-inline-chars-to-escape*))
 
 (defmacro define-extension-block (extension-flag name expression &body options)
   (%make-definer extension-flag name expression options '%block-rules% '%block
-                 '`(and (* blank-line) (or ,@%block-rules%))))
+                 '`(and (* blank-line) (or ,@%block-rules%))
+                 '3bmd::*extension-to-md-block-chars-to-escape*))
 
+;;; EXTENSION-FLAG to list of character hash tables where
+;;; DEFINE-EXTENSION-INLINE and DEFINE-EXTENSION-BLOCK register the
+;;; characters to escape when printing to Markdown with the
+;;; corresponding extension enabled at the time of printing.
+(defvar 3bmd::*extension-to-md-inline-chars-to-escape* (make-hash-table))
+(defvar 3bmd::*extension-to-md-block-chars-to-escape* (make-hash-table))
+
+(defun add-to-extension-to-md-chars-to-escape (ht extension-flag chars)
+  (setf (gethash extension-flag ht)
+        (append (gethash extension-flag ht) chars)))

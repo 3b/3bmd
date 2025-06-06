@@ -35,16 +35,37 @@
 ;;; These are some of the 3BMD-GRAMMAR::SPECIAL-CHARs. The ! character
 ;;; is not necessary to escape if [ is. Similary, no need to escape >
 ;;; if < is. Backslash should never be escaped.
-(defparameter *block-chars-to-escape* "*_`&[]<#")
-(defparameter *inline-chars-to-escape* (remove #\# *block-chars-to-escape*))
+(defparameter *md-default-block-chars-to-escape* "#")
+(defparameter *md-default-inline-chars-to-escape* "*_`&[]<")
+
+(defvar *md-block-chars-to-escape*)
+(defvar *md-inline-chars-to-escape*)
+
+(defun chars-to-escape-with-extensions (default extension-to-md-chars-to-escape)
+  (let ((strings (list default)))
+    (maphash (lambda (extension-flag chars)
+               (when (symbol-value extension-flag)
+                 (push (coerce chars 'string) strings)))
+             extension-to-md-chars-to-escape)
+    (apply #'concatenate 'string strings)))
+
+(defmacro with-md-escapes (&body body)
+  `(let ((*md-block-chars-to-escape*
+           (chars-to-escape-with-extensions
+            *md-default-block-chars-to-escape*
+            *extension-to-md-block-chars-to-escape*))
+         (*md-inline-chars-to-escape*
+           (chars-to-escape-with-extensions
+            *md-default-inline-chars-to-escape*
+            *extension-to-md-inline-chars-to-escape*)))
+     ,@body))
 
 (defun print-md-escaped (string stream)
   (loop for char across string
         do (when (and (not *in-code*)
-                      (find char
-                            (if (eq *md-in-block* :right-after-indent)
-                                *block-chars-to-escape*
-                                *inline-chars-to-escape*)))
+                      (or (find char *md-inline-chars-to-escape*)
+                          (and (eq *md-in-block* :right-after-indent)
+                               (find char *md-block-chars-to-escape*))))
              ;; TODO: The escaping is overeager. For example, there is
              ;; no need for the escapes in "\\<->" and "\\&KEY " due
              ;; to how the parser works, but this needs information
@@ -247,8 +268,9 @@
         (*md-prefix* "")
         (*md-in-block* nil)
         (*md-block-seen-p* nil))
-    (dolist (element doc)
-      (print-md-element element stream))))
+    (with-md-escapes
+        (dolist (element doc)
+          (print-md-element element stream)))))
 
 #|
 
