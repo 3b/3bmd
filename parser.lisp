@@ -141,22 +141,34 @@
     (list :verbatim (text a))))
 
 
-(defrule ref-title (or ref-title-single ref-title-double ref-title-parens empty-title))
+(defrule ref-title (or ref-title-single ref-title-double ref-title-parens
+                       empty-title))
 (macrolet ((def-ref-title (name delim &optional (close-delim delim))
-             `(defrule ,name (and ,delim
-                                  (* (and (! (or (and ,close-delim sp newline)
-                                                 (and ,close-delim eof)
-                                                 newline))
-                                          character))
-                                  ,close-delim)
-                (:destructure (q title q2)
-                              (declare (ignore q q2))
+             `(defrule ,name (and spnl ,delim
+                                  (* (or escaped-single-quote
+                                         escaped-double-quote
+                                         escaped-closing-paren
+                                         extended-escape-character
+                                         (and (! ,close-delim)
+                                              character)))
+                                  ,close-delim sp (or newline eof))
+                (:destructure (s q title q2 s2 e)
+                              (declare (ignore s q q2 s2 e))
                               (text title)))))
   (def-ref-title ref-title-single #\')
   (def-ref-title ref-title-double #\")
   (def-ref-title ref-title-parens #\( #\)))
-(defrule empty-title ""
+(defrule empty-title (and spnl (or newline eof (& label)))
   (:constant nil))
+
+(defrule escaped-single-quote "\\'"
+  (:constant "'"))
+
+(defrule escaped-double-quote "\\\""
+  (:constant "\""))
+
+(defrule escaped-closing-paren "\\)"
+  (:constant ")"))
 
 (defrule ref-source (+ non-space-char)
   (:text t))
@@ -164,9 +176,9 @@
 ;; fixme: is 'label' field allowed to have markup?
 ;; peg-markdown seems to allow it, but markdown.pl doesn't
 (defrule reference (and nonindent-space (! "[]") label #\: spnl ref-source
-                        spnl ref-title (* blank-line))
-  (:destructure (s n label \: s2 source s3 title b)
-                (declare (ignore s n \: s2 s3 b))
+                        ref-title (* blank-line))
+  (:destructure (s n label \: s2 source title b)
+                (declare (ignore s n \: s2 b))
                 (list :reference :label label :source source :title title)))
 
 (defrule horizontal-rule (and nonindent-space

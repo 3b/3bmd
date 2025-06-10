@@ -67,3 +67,78 @@
   :expected '((:PLAIN
                (:REFERENCE-LINK :LABEL ((:EMPH "l"))
                                 :TAIL "[]"))))
+
+(def-grammar-test reference-link-single-quoted-title-with-escapes
+  :text "[link]
+
+[link]: http://example.com/ 'ti\\'tle'"
+  :expected '((:PARAGRAPH
+               (:REFERENCE-LINK :LABEL ("link") :TAIL NIL))
+              (:REFERENCE :LABEL ("link") :SOURCE "http://example.com/"
+                          :TITLE "ti'tle")))
+
+(def-grammar-test reference-link-double-quoted-title-with-escapes
+  :text "[link]
+
+[link]: http://example.com/ \"ti\\\"tle\""
+  :expected '((:PARAGRAPH
+               (:REFERENCE-LINK :LABEL ("link") :TAIL NIL))
+              (:REFERENCE :LABEL ("link") :SOURCE "http://example.com/"
+                          :TITLE "ti\"tle")))
+
+(def-grammar-test reference-link-parenthesized-title-with-escapes
+  :text "[link]
+
+[link]: http://example.com/ (ti\\)tle)"
+  :expected '((:PARAGRAPH
+               (:REFERENCE-LINK :LABEL ("link") :TAIL NIL))
+              (:REFERENCE :LABEL ("link") :SOURCE "http://example.com/"
+                          :TITLE "ti)tle")))
+
+(def-grammar-test reference-link-definition-empty-title
+  :text "[link]
+
+[link]: http://example.com/"
+  :expected '((:PARAGRAPH
+               (:REFERENCE-LINK :LABEL ("link") :TAIL NIL))
+              (:REFERENCE :LABEL ("link") :SOURCE
+               "http://example.com/" :TITLE NIL)))
+
+(def-grammar-test reference-link-definition-empty-title-2
+  :text "[link1] x [link2]
+
+[link1]: http://example.com/1
+[link2]: http://example.com/2"
+  :expected '((:PARAGRAPH
+               (:REFERENCE-LINK :LABEL ("link1") :TAIL NIL) " " "x"
+               " " (:REFERENCE-LINK :LABEL ("link2") :TAIL NIL))
+              (:REFERENCE :LABEL ("link1") :SOURCE
+               "http://example.com/1" :TITLE NIL)
+              (:REFERENCE :LABEL ("link2") :SOURCE
+               "http://example.com/2" :TITLE NIL)))
+
+(def-grammar-test reference-link-definition-empty-title-3
+  :text "[link1] x [link2]
+
+[link1]: http://example.com/1
+[link2]: http://example.com/2
+
+x"
+  :expected '((:PARAGRAPH
+               (:REFERENCE-LINK :LABEL ("link1") :TAIL NIL) " " "x"
+               " " (:REFERENCE-LINK :LABEL ("link2") :TAIL NIL))
+              (:REFERENCE :LABEL ("link1") :SOURCE
+               "http://example.com/1" :TITLE NIL)
+              (:REFERENCE :LABEL ("link2") :SOURCE
+               "http://example.com/2" :TITLE NIL)
+              (:PLAIN "x")))
+
+(def-grammar-test reference-link-definition-trailing-junk
+  :text "[link]
+
+[link]: http://example.com/ \"title\" junk"
+  :expected '((:PARAGRAPH
+               (:REFERENCE-LINK :LABEL ("link") :TAIL NIL))
+              (:PLAIN (:REFERENCE-LINK :LABEL ("link") :TAIL NIL)
+               ":" " " "http://example.com/" " " "\"title\"" " "
+               "junk")))
