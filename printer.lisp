@@ -308,14 +308,21 @@
       (error "unknown cons? ~s" elem)))
 
 
+;;; allow extensions to add other kinds of references, should return a
+;;; list (key . value), where key is a list (ext-key ...), and value
+;;; is whatever the extension needs
+(defmethod extract-ref (id cdr))
+(defmethod extract-ref ((id (eql :reference)) cdr)
+  (list (print-label-to-string (getf cdr :label))
+        (getf cdr :source)
+        (getf cdr :title)))
 
 (defun extract-refs (doc)
   (alexandria:alist-hash-table
    (loop for i in doc
-      when (and (consp i) (eq (car i) :reference))
-      collect (list (print-label-to-string (getf (cdr i) :label))
-                    (getf (cdr i) :source)
-                    (getf (cdr i) :title)))
+         when (and (consp i)
+                   (extract-ref (car i) (cdr i)))
+           collect it)
    :test #'equalp))
 
 (defun expand-tabs (doc &key add-newlines)
@@ -336,13 +343,38 @@
     (when add-newlines
       (format s "~%~%"))))
 
+;;; todo: add extension API, and possibly some way to specify a default order?
+;;
+;; not really expecting multiple extensions with footers to be active
+;; at once, so for now just rebind it in desired order if needed. (and
+;; file an issue with use case so it can be improved at some point)
+;;
+;; list of symbols naming extension-flags
+(defvar *footers* nil)
+
+;; extensions that print footers should define methods on this, with
+;; extension-flag EQL specialized on the name of the extension flag
+;; variable in *footers*
+(defmethod print-footer (stream extension-flag format)
+  )
+
+(defun print-footers (stream format)
+  (loop for flag in *footers*
+        when (symbol-value flag)
+          do (print-footer stream flag format)))
+
+;; alist of (var . initial-value-function)
+(defvar *additional-bindings* nil)
 
 (defmethod print-doc-to-stream-using-format (doc stream (format (eql :html)))
   (let ((*references* (extract-refs doc))
         ;; Protect the global value.
         (*padding* *padding*))
-    (loop for i in doc
-          do (print-element i stream))
+    (progv (map 'list 'car *additional-bindings*)
+        (map 'list (alexandria:compose 'funcall 'cdr) *additional-bindings*)
+      (loop for i in (print doc)
+            do (print-element i stream))
+      (print-footers stream format))
     (format stream "~&")))
 
 (defun print-doc-to-stream (doc stream &key (format :html))
