@@ -1,8 +1,8 @@
-(defpackage #:3bmd-footnote
+(defpackage #:3bmd-footnotes
   (:use :cl :esrap :3bmd-ext)
   (:export #:*footnotes*))
 
-(in-package #:3bmd-footnote)
+(in-package #:3bmd-footnotes
 
 (defvar *footnotes*)
 

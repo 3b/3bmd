@@ -1,6 +1,6 @@
 (fiasco:define-test-package #:3bmd-footnotes-tests
   (:use #:3bmd-tests)
-  (:import-from #:3bmd-footnote
+  (:import-from #:3bmd-footnotes
                 #:footnote
                 #:*footnotes*
                 #:footnote-ref
