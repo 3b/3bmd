@@ -132,6 +132,31 @@
       (format stream "</ol>"))
     (format stream "</section>")))
 
+
+(defmethod 3bmd::print-md-tagged-element ((tag (eql 'footnote-ref)) stream rest)
+  (format stream "[^~a]" (first rest)))
+
+(defmethod 3bmd::print-md-tagged-element ((tag (eql 'footnote-def)) stream rest)
+  (3bmd::ensure-block stream)
+  (format stream "~&[^~a]: " (first rest))
+  (3bmd::with-md-indent (4)
+    (loop for i in (cdr rest)
+          do (3bmd::print-md-element i stream)))
+  (3bmd::end-block stream))
+
+(defmethod 3bmd::print-md-tagged-element ((tag (eql 'footnote-backlinks)) stream rest)
+  )
+
+
+(3bmd::pprinter footnote-def (s o)
+  (format s "[^~a]: ~{~a ~}" (cadr o) (cddr o)))
+
+(3bmd::pprinter footnote-ref (s o)
+  (format s "[^~a]" (cadr o)))
+
+(3bmd::pprinter footnote-backlinks (s o)
+  (declare (ignore s o)))
+
 #++
 (let ((*footnotes* t)
       (3bmd-code-blocks:*code-blocks* t)
@@ -179,6 +204,4 @@ Here's a simple footnote,[^1] and[^1] here[^1]'s a longer one.[^bignote]
     * Add as many paragraphs as you like.
     * liost
 
-" s)))
-
-
+" s :format :html)))

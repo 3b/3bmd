@@ -366,15 +366,18 @@
 ;; alist of (var . initial-value-function)
 (defvar *additional-bindings* nil)
 
+(defmethod print-doc-to-stream-using-format :around (doc stream format)
+  (progv (map 'list 'car *additional-bindings*)
+      (map 'list (alexandria:compose 'funcall 'cdr) *additional-bindings*)
+    (call-next-method)))
+
 (defmethod print-doc-to-stream-using-format (doc stream (format (eql :html)))
   (let ((*references* (extract-refs doc))
         ;; Protect the global value.
         (*padding* *padding*))
-    (progv (map 'list 'car *additional-bindings*)
-        (map 'list (alexandria:compose 'funcall 'cdr) *additional-bindings*)
-      (loop for i in (print doc)
-            do (print-element i stream))
-      (print-footers stream format))
+    (loop for i in (print doc)
+          do (print-element i stream))
+    (print-footers stream format)
     (format stream "~&")))
 
 (defun print-doc-to-stream (doc stream &key (format :html))
