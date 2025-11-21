@@ -375,7 +375,7 @@
   (let ((*references* (extract-refs doc))
         ;; Protect the global value.
         (*padding* *padding*))
-    (loop for i in (print doc)
+    (loop for i in doc
           do (print-element i stream))
     (print-footers stream format)
     (format stream "~&")))
