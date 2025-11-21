@@ -12,23 +12,22 @@
 (defrule footnote (and "[^" (+ (and (! (or #\[ #\]))
                                     3bmd-grammar::non-space-char))
                        "]")
-  (:destructure (o id c)
-    (declare (ignore o c))
-    (text id)))
+  (:function second)
+  (:text t))
 
 (define-extension-inline *footnotes* footnote-ref
     (and footnote (! #\:))
-  (:destructure (id x)
-                (declare (ignore x))
-                (list 'footnote-ref id)))
+  (:function first)
+  (:lambda (id)
+    (list 'footnote-ref id)))
 
 ;;; we parse footnote definitions basically like a loose list, but
 ;;; without a "next list item"
 (defrule footnote-block (and (! 3bmd-grammar::blank-line)
                              3bmd-grammar::line
                              (* footnote-block-line))
-  (:destructure (b l block)
-    (declare (ignore b))
+  (:function rest)
+  (:destructure (l block)
     (text l block)))
 
 (defrule footnote-continuation-block (and (* 3bmd-grammar::blank-line)
@@ -42,9 +41,7 @@
 (defrule footnote-block-line (and (! 3bmd-grammar::blank-line)
                                   (! 3bmd-grammar::horizontal-rule)
                                   3bmd-grammar::optionally-indented-line)
-  (:destructure (i1 i2 line)
-    (declare (ignore i1 i2))
-    line))
+  (:function third))
 
 
 ;; hash table of ID -> (ref-name . backref-names)
