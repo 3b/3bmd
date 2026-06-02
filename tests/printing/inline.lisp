@@ -158,3 +158,8 @@
 "
   :expected "\\inlinelatexormathjax{arg}
 ")
+
+(def-print-test do-not-escape-md-chars-in-urls
+  :format :markdown
+  :text "<http://a/?forum_id=*_`&[]>"
+  :expected "<http://a/?forum_id=*_`&[]>")

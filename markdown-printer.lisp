@@ -118,7 +118,8 @@
 
 (defmethod print-md-tagged-element ((tag (eql :link)) stream rest)
   (format stream "<")
-  (dolist (a rest) (print-md-element a stream))
+  (let ((*md-inline-chars-to-escape* ""))
+    (dolist (a rest) (print-md-element a stream)))
   (format stream ">"))
 
 (defmethod print-md-tagged-element ((tag (eql :mailto)) stream rest)
