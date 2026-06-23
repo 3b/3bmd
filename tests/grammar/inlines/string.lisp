@@ -16,8 +16,8 @@
 (def-grammar-test string-test-3
   :rule 3bmd-grammar::string
   :text "@a_symbol@ string with spaces."
-  :expected "@a_symbol@"
-  :remaining-text " string with spaces.")
+  :expected "@"
+  :remaining-text "a_symbol@ string with spaces.")
 
 (def-grammar-test string-test-4
   :rule 3bmd-grammar::string

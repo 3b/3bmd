@@ -95,8 +95,9 @@
                ,@(if warn
                      ;; just supporting 1 warning for now
                      `((is (= 1 (length signalled-warnings)))
-                       (let ((signalled-warning (format nil "~a"
-                                                        (car signalled-warnings))))
+                       (let* ((*print-right-margin* most-positive-fixnum)
+                              (signalled-warning
+                                (format nil "~a" (car signalled-warnings))))
                          (is (string= signalled-warning ,warn))))
 
                      `((is (not signalled-warnings))))

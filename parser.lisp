@@ -469,7 +469,10 @@
 
 (defrule maybe-alphanumeric (& alphanumeric)
   (:constant ""))
-(defrule string (and normal-char (* (or normal-char (and (+ #\_) maybe-alphanumeric))))
+(defrule string (or (and alphanumeric (* (or normal-char
+                                             (and (+ #\_) maybe-alphanumeric))))
+                    ;; This could be (+ NORMAL-CHAR), but that's a bit slower.
+                    normal-char)
   (:text t))
 
 (defrule maybe-space-char (& space-char)

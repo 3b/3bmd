@@ -71,7 +71,7 @@ World!
                (:LIST-ITEM (:PLAIN "First" " " "line")))
               (:PLAIN "  " "The" " " "header" "
 "
-               "  " "==========")))
+               "  " "=" "=" "=" "=" "=" "=" "=" "=" "=" "=")))
 
 (def-grammar-test atx-heading-in-a-list ;; bug 35
   ;;; marked bug as invalid, since original markdown is inconsistent
