@@ -103,3 +103,93 @@
   :expected '((:BULLET-LIST
                (:LIST-ITEM (:PLAIN "First" " " "line")))
               (:PARAGRAPH (:EMPH "Some" " " "text"))))
+
+(def-grammar-test emph-in-parens
+  :rule 3bmd-grammar::doc
+  :text "(_x_)"
+  :expected '((:PLAIN "(" (:EMPH "x") ")")))
+
+(def-grammar-test emph-in-braces
+  :rule 3bmd-grammar::doc
+  :text "{_x_}"
+  :expected '((:PLAIN "{" (:EMPH "x") "}")))
+
+(def-grammar-test emph-in-double-quotes
+  :rule 3bmd-grammar::doc
+  :text "\"_x_\""
+  :expected '((:PLAIN "\"" (:EMPH "x") "\"")))
+
+(def-grammar-test emph-in-single-quotes
+  :rule 3bmd-grammar::doc
+  :text "'_x_'"
+  :expected '((:PLAIN "'" (:EMPH "x") "'")))
+
+(def-grammar-test emph-after-comma
+  :rule 3bmd-grammar::doc
+  :text ",_x_"
+  :expected '((:PLAIN "," (:EMPH "x"))))
+
+(def-grammar-test emph-after-period
+  :rule 3bmd-grammar::doc
+  :text "._x_"
+  :expected '((:PLAIN "." (:EMPH "x"))))
+
+(def-grammar-test emph-after-semicolon
+  :rule 3bmd-grammar::doc
+  :text ";_x_"
+  :expected '((:PLAIN ";" (:EMPH "x"))))
+
+(def-grammar-test emph-after-colon
+  :rule 3bmd-grammar::doc
+  :text ":_x_"
+  :expected '((:PLAIN ":" (:EMPH "x"))))
+
+(def-grammar-test emph-after-question-mark
+  :rule 3bmd-grammar::doc
+  :text "?_x_"
+  :expected '((:PLAIN "?" (:EMPH "x"))))
+
+(def-grammar-test emph-after-equal
+  :rule 3bmd-grammar::doc
+  :text "=_x_"
+  :expected '((:PLAIN "=" (:EMPH "x"))))
+
+(def-grammar-test emph-after-plus
+  :rule 3bmd-grammar::doc
+  :text "+_x_"
+  :expected '((:PLAIN "+" (:EMPH "x"))))
+
+(def-grammar-test emph-after-minus
+  :rule 3bmd-grammar::doc
+  :text "-_x_"
+  :expected '((:PLAIN "-" (:EMPH "x"))))
+
+(def-grammar-test emph-after-caret
+  :rule 3bmd-grammar::doc
+  :text "^_x_"
+  :expected '((:PLAIN "^" (:EMPH "x"))))
+
+(def-grammar-test emph-after-slash
+  :rule 3bmd-grammar::doc
+  :text "/_x_"
+  :expected '((:PLAIN "/" (:EMPH "x"))))
+
+(def-grammar-test emph-after-bar
+  :rule 3bmd-grammar::doc
+  :text "|_x_"
+  :expected '((:PLAIN "|" (:EMPH "x"))))
+
+(def-grammar-test emph-after-percent
+  :rule 3bmd-grammar::doc
+  :text "%_x_"
+  :expected '((:PLAIN "%" (:EMPH "x"))))
+
+(def-grammar-test emph-after-dollar
+  :rule 3bmd-grammar::doc
+  :text "$_x_"
+  :expected '((:PLAIN "$" (:EMPH "x"))))
+
+(def-grammar-test emph-after-at
+  :rule 3bmd-grammar::doc
+  :text "@_x_"
+  :expected '((:PLAIN "@" (:EMPH "x"))))

@@ -140,5 +140,5 @@ x"
   :expected '((:PARAGRAPH
                (:REFERENCE-LINK :LABEL ("link") :TAIL NIL))
               (:PLAIN (:REFERENCE-LINK :LABEL ("link") :TAIL NIL)
-               ":" " " "http://example.com/" " " "\"title\"" " "
+               ":" " " "http://example.com/" " " "\"" "title\"" " "
                "junk")))
