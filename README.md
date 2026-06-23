@@ -133,3 +133,14 @@ especially, without heading:
         $$
         \frac{\partial E}{\partial y} = \frac{\partial }{\partial y} \frac{1}{n}\sum_{i=1}^{n} (y_i - a_i)^2
         $$
+
+* Loading `3bmd-footnotes.asd` adds support for footnotes. If `3bmd-footnotes:*footnotes*` is non-`NIL` while parsing, the syntax `[^id]` can be used to refer to a footnote, which should be defined by `[^id]: contents of the footnote`. For example:
+
+        A footnote[^1] reference.
+
+        [^1]: a footnote, which can have its own footnotes[^2].
+        [^3]: almost anywhere: defining footnotes inside other block elements doesn't currently work.
+        [^2]: a footnote on a footnote.
+        [^x]: footnotes without any references in main document will not be shown.
+
+        The footnote definitions can be anywhere[^3] in the document, and will be moved to the end of the generated HTML in order of reference.

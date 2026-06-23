@@ -47,7 +47,8 @@
         (escapes (cdr (assoc :escape-char-rule options)))
         (md-chars-to-escapes (cdr (assoc :md-chars-to-escape options)))
         (after (cdr (assoc :after options)))
-        (before (cdr (assoc :before options))))
+        (before (cdr (assoc :before options)))
+        (bind (cdr (assoc :bind options))))
     `(progn
        ;; define the flag to make the trivial case easier
        (defvar ,extension-flag nil)
@@ -60,7 +61,7 @@
                     (add-expression-to-list ',(first characters)
                                             %extended-special-char-rules%))
               (esrap:change-rule 'extended-special-char
-                                            (cons 'or %extended-special-char-rules%))))
+                                 (cons 'or %extended-special-char-rules%))))
           ;; define a rule for escaped chars if any
        ,@ (when escapes
             `((defrule ,(first escapes)
@@ -79,8 +80,15 @@
                         (member (car a) '(:character-rule
                                           :escape-char-rule
                                           :md-chars-to-escape
-                                          :after :before)))
-                      options))
+                                          :after :before
+                                          :bind)))
+             options))
+       ;; add additional bindings needed by extension during printing
+       ,@(when bind
+           (loop for (v i) on bind by 'cddr
+                 collect `(setf (alexandria:assoc-value
+                                 3bmd::*additional-bindings* ',v)
+                                (lambda () ,i))))
        (setf ,var
              (add-expression-to-list ',name
                                      ,var
