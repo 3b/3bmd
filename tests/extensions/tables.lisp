@@ -62,13 +62,13 @@
                           :BODY
                           (((TD (:PLAIN "col" " " (:CODE "3") " " "is") LEFT)
                             (TD (:PLAIN "some" " " "wordy" " " "text") CENTER)
-                            (TD (:PLAIN "$1600") RIGHT))
+                            (TD (:PLAIN "$" "1600") RIGHT))
                            ((TD (:PLAIN "col" " " "2" " " "is") LEFT)
                             (TD (:PLAIN "centered") CENTER)
-                            (TD (:PLAIN "$12") RIGHT))
+                            (TD (:PLAIN "$" "12") RIGHT))
                            ((TD (:PLAIN "zebra" " " "stripes") LEFT)
                             (TD (:PLAIN "are" " " "neat") CENTER)
-                            (TD (:PLAIN "$1") RIGHT)))))
+                            (TD (:PLAIN "$" "1") RIGHT)))))
 
 
 (3bmd-tests::def-grammar-test tables-4

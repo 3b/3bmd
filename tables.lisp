@@ -159,13 +159,13 @@
                          :body
                          (((td (:plain "col" " " (:code "3") " " "is") left)
                            (td (:plain "some" " " "wordy" " " "text") center)
-                           (td (:plain "$1600") right))
+                           (td (:plain "$" "1600") right))
                           ((td (:plain "col" " " "2" " " "is") left)
                            (td (:plain "centered") center)
-                           (td (:plain "$12") right))
+                           (td (:plain "$" "12") right))
                           ((td (:plain "zebra" " " "stripes") left)
                            (td (:plain "are" " " "neat") center)
-                           (td (:plain "$1") right)))))
+                           (td (:plain "$" "1") right)))))
           (parse-doc "
 | Left-Aligned  | Center Aligned  | Right Aligned |
 | :------------ |:---------------:| -----:|
