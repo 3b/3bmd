@@ -223,11 +223,27 @@
       (foo parse-tree))
     n))
 
+(defun starts-with-backtick-p (parse-tree)
+  (let ((a (first parse-tree)))
+    (and (stringp a)
+         (plusp (length a))
+         (char= (aref a 0) #\`))))
+
+(defun ends-with-backtick-p (parse-tree)
+  (let ((a (first (last parse-tree))))
+    (and (stringp a)
+         (plusp (length a))
+         (char= (aref a (1- (length a))) #\`))))
+
 (defmethod print-md-tagged-element ((tag (eql :code)) stream rest)
   (let ((n (max-n-consecutive-backticks rest)))
     (loop repeat (1+ n) do (write-char #\` stream))
     (let ((*in-code* t))
-      (dolist (a rest) (print-md-element a stream)))
+      (when (starts-with-backtick-p rest)
+        (write-char #\Space stream))
+      (dolist (a rest) (print-md-element a stream))
+      (when (ends-with-backtick-p rest)
+        (write-char #\Space stream)))
     (loop repeat (1+ n) do (write-char #\` stream))))
 
 (defmacro define-smart-quote-md-translation (name replacement)

@@ -163,3 +163,18 @@
   :format :markdown
   :text "<http://a/?forum_id=*_`&[]>"
   :expected "<http://a/?forum_id=*_`&[]>")
+
+(def-print-test print-code-with-backticks-1
+  :format :markdown
+  :text "``a`b``"
+  :expected "``a`b``")
+
+(def-print-test print-code-with-backticks-2
+  :format :markdown
+  :text "``a` ``"
+  :expected "``a` ``")
+
+(def-print-test print-code-with-backticks-3
+  :format :markdown
+  :text "`` `b``"
+  :expected "`` `b``")
