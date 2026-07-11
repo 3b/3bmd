@@ -46,19 +46,14 @@
 
 (defrule non-space-char (and (! space-char) (! newline) character)
   (:text t))
-(defrule alphanumeric (alphanumericp character))
-(defrule dec-digit (or #\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9))
+(defrule alphanumeric (alphanumericp character)
+  (:use-cache nil))
+(defrule dec-digit (character-ranges (#\0 #\9)))
 (defrule hex-digit (or dec-digit
                        #\a #\A #\b #\B #\c #\C #\d #\D #\e #\E #\f #\F))
-(defun ascii-char-p (c)
-  (let ((c (char-code c)))
-    (or (<= (char-code #\a) c (char-code #\z))
-        (<= (char-code #\A) c (char-code #\Z))
-        (<= (char-code #\0) c (char-code #\9)))))
-(defrule |A-Za-z| #.`(or ,@(coerce "ABCDEFGHIJKLMNOPQRSTUVWXYZ" 'list)
-                         ,@(coerce "abcdefghijklmnopqrstuvwxyz" 'list)))
-(defrule ascii-character (ascii-char-p character))
-(defrule alphanumeric-ascii (ascii-char-p character))
+(defrule |A-Za-z| (character-ranges (#\a #\z) (#\A #\Z)))
+(defrule ascii-character (character-ranges (#\a #\z) (#\A #\Z) (#\0 #\9)))
+(defrule alphanumeric-ascii ascii-character)
 
 (defrule doc (and (* %block) (* blank-line))
   (:destructure (content blanks)
@@ -101,11 +96,17 @@
      collect %block
      while pos))
 
+(defun definitely-not-newline-p (char)
+  (not (or (char= char #\linefeed) (char= char #\return))))
+
 (defrule line raw-line
   (:text t))
-(defrule raw-line (or (and (* (and (! newline) character))
+
+(defrule raw-line (or (and (* (or (definitely-not-newline-p character)
+                                  (and (! newline) character)))
                            newline)
                       (and (+ character) eof)))
+
 (defrule optionally-indented-line (and (? indent) line)
   (:destructure (i l)
                 (declare (ignore i))
@@ -623,15 +624,17 @@
   (ticks-code ticks3 code3 "```")
   (ticks-code ticks4 code4 "````")
   (ticks-code ticks5 code5 "`````"))
-(defrule code (or code1 code2 code3 code4 code5)
-  (:lambda (a)
+(defrule code (and (& #\`) (or code1 code2 code3 code4 code5))
+  (:destructure (guard a)
+    (declare (ignore guard))
     (list :code a)))
 
 
-(defrule raw-html (or html-comment
-                      html-processing-instruction
-                      html-tag)
-  (:lambda (a)
+(defrule raw-html (and (& #\<) (or html-comment
+                                   html-processing-instruction
+                                   html-tag))
+  (:destructure (guard a)
+    (declare (ignore guard))
     (list :raw-html a)))
 (defrule html-comment (and "<!--" (* (and (! "-->") character)) "-->")
   (:text t))
