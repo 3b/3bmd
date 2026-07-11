@@ -56,11 +56,12 @@
             `((defrule ,(first characters)
                   (or ,@(rest characters))
                 (:when ,extension-flag))
-              (setf %extended-special-char-rules%
-                    (add-expression-to-list ',(first characters)
-                                            %extended-special-char-rules%))
-              (esrap:change-rule 'extended-special-char
-                                            (cons 'or %extended-special-char-rules%))))
+              (if (assoc ',extension-flag %flag-to-extended-chars-alist%)
+                  (setf (cdr (assoc ',extension-flag
+                                    %flag-to-extended-chars-alist%))
+                        ',(rest characters))
+                  (push '(,extension-flag ,@ (rest characters))
+                        %flag-to-extended-chars-alist%))))
           ;; define a rule for escaped chars if any
        ,@ (when escapes
             `((defrule ,(first escapes)

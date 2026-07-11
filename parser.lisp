@@ -33,17 +33,37 @@
 (defrule line-break (and "  " normal-endline)
   (:constant '(:line-break)))
 (defrule endline (or line-break terminal-endline normal-endline))
-(defrule normal-char (and (! (or special-char space-char newline)) character)
-  (:text t))
-(defrule special-char (or #\* #\_ #\` #\& #\[ #\] #\< #\! #\# #\\
-                          extended-special-char)
-  (:text t))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defparameter %extended-special-char-rules% nil))
-(defrule extended-special-char #.(cons 'or %extended-special-char-rules%)
-  (:text t))
+  (defparameter %standard-special-chars%
+    '(#\* #\_ #\` #\& #\[ #\] #\< #\! #\# #\\))
+  ;; Elements like (*SMART-QUOTES* . <EXTENDED-CHARS>) where
+  ;; <EXTENDED-CHARS> are from the corresponding :CHARACTER-RULE.
+  (defvar %flag-to-extended-chars-alist% ()))
 
+(declaim (inline extended-special-char-p))
+(defun extended-special-char-p (char)
+  (dolist (entry %flag-to-extended-chars-alist%)
+    (when (and (symbol-value (car entry))
+               (member char (cdr entry)))
+      (return t))))
+
+;;; A predicate equivalent to (AND (! (OR SPECIAL-CHAR SPACE-CHAR NEWLINE)).
+(defun normal-char-p (char next-char)
+  (and (not (or (char= char #\space)
+                (char= char #\tab)
+                (special-char-p char)
+                (char= char #\linefeed)
+                (and (char= char #\return)
+                     (eql next-char #\linefeed))))))
+
+(defun special-char-p (char)
+  (declare (type character char))
+  (or (find char #.(coerce %standard-special-chars% 'string))
+      (extended-special-char-p char)))
+
+(defrule special-char (special-char-p character)
+  (:text t))
 (defrule non-space-char (and (! space-char) (! newline) character)
   (:text t))
 (defrule alphanumeric (alphanumericp character)
@@ -447,7 +467,7 @@
     (cons :plain a)))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defparameter %inline-rules% '(string
+  (defparameter %inline-rules% '(%string
                                  endline
                                  ul-or-star-line
                                  %space
@@ -470,11 +490,56 @@
 
 (defrule maybe-alphanumeric (& alphanumeric)
   (:constant ""))
-(defrule string (or (and alphanumeric (* (or normal-char
-                                             (and (+ #\_) maybe-alphanumeric))))
-                    ;; This could be (+ NORMAL-CHAR), but that's a bit slower.
-                    normal-char)
-  (:text t))
+
+;;; This function implements a much faster version of
+;;;
+;;;     (or (and alphanumeric (* (or normal-char
+;;;                                  (and (+ #\_) maybe-alphanumeric))))
+;;;         (+ normal-char))
+(defun parse-string (text position end)
+  (declare (type string text)
+           (type fixnum position end))
+  (if (<= end position)
+      (values nil position)
+      (let ((c (aref text position)))
+        (cond ((alphanumericp c)
+               (let ((p (1+ position)))
+                 (declare (type fixnum p))
+                 (loop while (< p end)
+                       for char = (aref text p)
+                       for next-char = (when (< (1+ p) end)
+                                         (aref text (1+ p)))
+                       do (cond
+                            ((normal-char-p char next-char)
+                             (incf p))
+                            ((char= char #\_)
+                             (let ((i p))
+                               (declare (type fixnum i))
+                               (loop while (and (< i end)
+                                                (char= (aref text i) #\_))
+                                     do (incf i))
+                               (if (and (< i end)
+                                        (alphanumericp (aref text i)))
+                                   (setq p i)
+                                   (return))))
+                            (t
+                             (return))))
+                 (values (subseq text position p) p)))
+              ((normal-char-p c (when (< (1+ position) end)
+                                  (aref text (1+ position))))
+               (let ((p (1+ position)))
+                 (declare (type fixnum p))
+                 (loop while (< p end)
+                       for char = (aref text p)
+                       for next-char = (when (< (1+ p) end)
+                                         (aref text (1+ p)))
+                       do (if (normal-char-p char next-char)
+                              (incf p)
+                              (return)))
+                 (values (subseq text position p) p)))
+              (t
+               (values nil position))))))
+(defrule %string (function parse-string))
 
 (defrule maybe-space-char (& space-char)
   (:constant ""))
