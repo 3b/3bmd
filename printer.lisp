@@ -76,7 +76,7 @@
                 (when (eql c #\>)
                   (setf state :text)))))))
 
-(defvar *generate-header-ids* NIL
+(defvar *generate-header-ids* nil
   "Whether ID attributes should be generated for header elements.")
 
 ;; todo: minimize extra newlines...
