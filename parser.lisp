@@ -48,14 +48,18 @@
                (member char (cdr entry)))
       (return t))))
 
+(declaim (inline newlinep))
+(defun newlinep (char next-char)
+  (or (char= char #\linefeed)
+      (and (char= char #\return)
+           (eql next-char #\linefeed))))
+
 ;;; A predicate equivalent to (AND (! (OR SPECIAL-CHAR SPACE-CHAR NEWLINE)).
 (defun normal-char-p (char next-char)
   (and (not (or (char= char #\space)
                 (char= char #\tab)
                 (special-char-p char)
-                (char= char #\linefeed)
-                (and (char= char #\return)
-                     (eql next-char #\linefeed))))))
+                (newlinep char next-char)))))
 
 (defun special-char-p (char)
   (declare (type character char))
@@ -116,16 +120,32 @@
      collect %block
      while pos))
 
-(defun definitely-not-newline-p (char)
-  (not (or (char= char #\linefeed) (char= char #\return))))
-
 (defrule line raw-line
   (:text t))
 
-(defrule raw-line (or (and (* (or (definitely-not-newline-p character)
-                                  (and (! newline) character)))
-                           newline)
-                      (and (+ character) eof)))
+;;; This function is an optimized version of the rule
+;;;
+;;;     (or (and (* (and (! newline) character)) newline)
+;;;         (and (+ character) eof))
+(defun parse-raw-line (text position end)
+  (declare (type string text)
+           (type fixnum position end))
+  (if (>= position end)
+      (values nil position)
+      (let ((p position))
+        (declare (type fixnum p))
+        (let ((pos (loop while (< p end)
+                         for char = (aref text p)
+                         do (when (char= char #\linefeed)
+                              (return (1+ p)))
+                            (when (and (char= char #\return)
+                                       (< (1+ p) end)
+                                       (char= (aref text (1+ p)) #\linefeed))
+                              (return (+ p 2)))
+                            (incf p)
+                         finally (return p))))
+          (values (subseq text position pos) pos)))))
+(defrule raw-line (function parse-raw-line))
 
 (defrule optionally-indented-line (and (? indent) line)
   (:destructure (i l)
@@ -491,7 +511,7 @@
 (defrule maybe-alphanumeric (& alphanumeric)
   (:constant ""))
 
-;;; This function implements a much faster version of
+;;; This function is an optimized version of the rule
 ;;;
 ;;;     (or (and alphanumeric (* (or normal-char
 ;;;                                  (and (+ #\_) maybe-alphanumeric))))
